@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>中山醫管路維護系統</title>
+    <title>臨床管路維護管理系統</title>
     <style>
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; }
         
-        /* 標題區塊：加入新校徽圖片 */
+        /* 標題區塊：使用妳上傳的 logo.png */
         .header { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 15px 0; }
-        .header img { height: 50px; width: auto; border-radius: 5px; } /* 稍微加高一點 */
-        .header h2 { margin: 0; font-size: 22px; color: #1C1C1E; font-weight: bold; }
+        .header img { 
+            height: 50px; /* 妳可以調整這個數字來改變 Logo 大小 */
+            width: auto; 
+            border-radius: 8px; /* 選擇性：加上一點圓角 */
+            object-fit: contain; /* 確保圖片不變形 */
+        }
+        .header h2 { margin: 0; font-size: 20px; color: #1C1C1E; font-weight: bold; }
 
         .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,122,255,0.2); cursor: pointer; }
         
@@ -56,8 +61,8 @@
 
     <div class="container">
         <div class="header">
-            <img src="https://i.postimg.cc/q7SjG84k/1000021466.png" alt="CSMU Logo">
-            <h2>管路維護系統</h2>
+            <img src="logo.png" alt="CSMU Logo">
+            <h2>管路維護管理系統</h2>
         </div>
         
         <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
@@ -94,7 +99,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'csmu_local_v2';
+        const STORAGE_KEY = 'csmu_tube_v3';
         let pList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
         function render() {
@@ -102,4 +107,68 @@
             const now = new Date(); now.setHours(0,0,0,0);
             pList.sort((a, b) => {
                 if (!a.date) return 1; if (!b.date) return -1;
-                return new Date(a
+                return new Date(a.date) - new Date(b.date);
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(pList));
+            container.innerHTML = pList.length ? pList.map(item => {
+                let isUrgent = false; let statusLabel = '追蹤中';
+                if (item.date) {
+                    const diffDays = Math.ceil((new Date(item.date) - now) / 86400000);
+                    if (diffDays <= 7) { isUrgent = true; statusLabel = diffDays < 0 ? '⚠️ 已逾期' : `⚠️ ${diffDays}天內到期`; }
+                }
+                const tagClass = item.type ? `tag-${item.type}` : '';
+                return `
+                    <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
+                        <div class="card-top">
+                            <div class="info">
+                                <b>${item.name} <small style="color:#8E8E93">(${item.bed || '--'})</small></b>
+                                ${item.type ? `<span class="tube-tag ${tagClass}">${item.type}</span>` : ''}
+                            </div>
+                            <div class="status-badge">${statusLabel}</div>
+                        </div>
+                        <div class="date-grid">
+                            <div class="date-row"><span class="date-label">置放</span><span class="date-value">${item.startdate || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">到期</span><span class="date-value">${item.date || '--'}</span></div>
+                        </div>
+                        <div class="bottom-info">醫師：${item.dr || '--'} | 診斷：${item.diag || '--'}</div>
+                    </div>`;
+            }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前無資料，點擊上方按鈕新增</p>';
+        }
+
+        function save() {
+            const name = document.getElementById('eName').value;
+            const id = document.getElementById('eId').value || Date.now().toString();
+            if (!name) return alert("姓名必填！");
+            const data = {
+                id, name, bed: document.getElementById('eBed').value, dr: document.getElementById('eDr').value,
+                diag: document.getElementById('eDiag').value, type: document.getElementById('eType').value,
+                startdate: document.getElementById('eStartDate').value, date: document.getElementById('eDate').value,
+                memo: document.getElementById('eMemo').value
+            };
+            const idx = pList.findIndex(i => i.id === id);
+            if (idx > -1) pList[idx] = data; else pList.push(data);
+            render(); closeEditor();
+        }
+
+        function del() {
+            const id = document.getElementById('eId').value;
+            if (id && confirm("確定要刪除嗎？")) { pList = pList.filter(i => i.id !== id); render(); closeEditor(); }
+        }
+
+        function openEditor(id = null) {
+            document.getElementById('editor').style.display = 'flex';
+            const fields = ['eId','eName','eBed','eDr','eDiag','eType','eStartDate','eDate','eMemo'];
+            if (id) {
+                const cur = pList.find(i => i.id === id);
+                document.getElementById('mTitle').innerText = "修改資料";
+                fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
+            } else {
+                document.getElementById('mTitle').innerText = "新增資料";
+                fields.forEach(f => document.getElementById(f).value = "");
+            }
+        }
+        function closeEditor() { document.getElementById('editor').style.display = 'none'; }
+        render();
+    </script>
+</body>
+</html>
