@@ -1,194 +1,37 @@
-<style>
-    :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
-    body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-    .header { text-align: center; padding: 10px 0; color: #1C1C1E; }
-    .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,122,255,0.2); }
-    
-    /* 卡片排版優化 */
-    .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; flex-direction: column; border-left: 8px solid var(--success); box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; position: relative; }
-    .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
-    
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-    .info b { font-size: 19px; color: #1C1C1E; display: block; }
-    
-    /* 日期對齊區域 */
-    .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 5px; }
-    .date-row { display: contents; font-size: 13px; color: #666; }
-    .date-label { color: #8E8E93; font-weight: 500; }
-    .date-value { font-family: monospace; color: #3A3A3C; font-weight: bold; }
-
-    /* 管路標籤自定義顏色 */
-    .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 1px solid rgba(0,0,0,0.1); margin-top: 5px; }
-    .tag-NG { background-color: #87CEEB; color: #000; }
-    .tag-Foley { background-color: #FFFF00; color: #000; }
-    .tag-PCND { background-color: #FFFF00; color: #000; }
-    .tag-Tr { background-color: #FFFFFF; color: #000; }
-    .tag-Port-A { background-color: #FFC0CB; color: #000; }
-    .tag-PICC { background-color: #FFC0CB; color: #000; }
-    .tag-Pigtail { background-color: #FFA500; color: #FFF; }
-    .tag-PTCD { background-color: #90EE90; color: #000; }
-    .tag-default { background-color: #E5E5EA; color: #333; }
-
-    /* 狀態標籤 */
-    .status-badge { position: absolute; top: 15px; right: 15px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; color: #3A3A3C; font-weight: bold; }
-    .urgent .status-badge { background: var(--danger); color: white; }
-
-    .bottom-info { font-size: 12px; color: #A1A1A1; margin-top: 10px; border-top: 1px dashed #EEE; padding-top: 8px; }
-
-    /* 彈窗樣式 */
-    #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 100; }
-    .modal { background: white; width: 90%; max-width: 450px; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; }
-    label { display: block; margin-top: 12px; font-size: 13px; color: #8E8E93; font-weight: bold; }
-    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #F9F9F9; font-family: inherit; }
-    .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-    .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
-    .cancel { background: #E5E5EA; color: #333; flex: 1; border: none; padding: 12px; border-radius: 10px; }
-</style>
-
-<div class="container">
-    <div class="header"><h2>🏥 臨床管路維護系統</h2></div>
-    <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
-    <div id="patientList"></div>
-</div>
-
-<div id="editor" onclick="if(event.target==this)closeEditor()">
-    <div class="modal">
-        <h3 id="mTitle" style="margin:0">編輯資料</h3>
-        <input type="hidden" id="eId">
-        <label>病患姓名 (必填)</label>
-        <input type="text" id="eName">
-        <label>病歷號 / 床號</label>
-        <input type="text" id="eBed">
-        <label>主治醫師</label>
-        <input type="text" id="eDr">
-        <label>診斷項目</label>
-        <input type="text" id="eDiag">
-        <label>家屬聯絡資訊</label>
-        <input type="text" id="eContact">
-        <label>住家地址</label>
-        <input type="text" id="eAddr">
-        <label>管路類型</label>
-        <select id="eType">
-            <option value="">-- 無 --</option>
-            <option value="NG">NG</option>
-            <option value="Foley">Foley</option>
-            <option value="PCND">PCND</option>
-            <option value="Tr">Tr</option>
-            <option value="Port-A">Port-A</option>
-            <option value="PICC">PICC</option>
-            <option value="Pigtail">Pigtail</option>
-            <option value="PTCD">PTCD</option>
-        </select>
-        <div style="display:flex; gap:10px">
-            <div style="flex:1"><label>置放日期</label><input type="date" id="eStartDate"></div>
-            <div style="flex:1"><label>到期日期</label><input type="date" id="eDate"></div>
-        </div>
-        <label>備註事項</label>
-        <textarea id="eMemo" style="height:60px"></textarea>
-        <div class="btn-group">
-            <button class="cancel" onclick="closeEditor()">取消</button>
-            <button class="save" onclick="save()">儲存資料</button>
-        </div>
-        <button style="background:none; color:var(--danger); width:100%; margin-top:15px; border:none; font-size:13px" onclick="del()">⚠️ 刪除此紀錄</button>
-    </div>
-</div>
-
-<script>
-    let pList = JSON.parse(localStorage.getItem('patientData_v12')) || [];
-
-    function render() {
-        const container = document.getElementById('patientList');
-        const now = new Date(); now.setHours(0,0,0,0);
-
-        pList.sort((a, b) => {
-            if (!a.date) return 1;
-            if (!b.date) return -1;
-            return new Date(a.date) - new Date(b.date);
-        });
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>臨床管路管理系統 (本地版)</title>
+    <style>
+        :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; }
         
-        localStorage.setItem('patientData_v12', JSON.stringify(pList));
+        .header { text-align: center; padding: 10px 0; color: #1C1C1E; }
+        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,122,255,0.2); cursor: pointer; }
         
-        container.innerHTML = pList.length ? pList.map(item => {
-            let isUrgent = false;
-            let statusLabel = '純紀錄';
-            if (item.date) {
-                const dueDate = new Date(item.date); dueDate.setHours(0,0,0,0);
-                const diffDays = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
-                if (diffDays <= 7) {
-                    isUrgent = true;
-                    statusLabel = diffDays < 0 ? '⚠️ 已逾期' : `⚠️ ${diffDays}天內到期`;
-                } else { statusLabel = '追蹤中'; }
-            }
+        /* 卡片排版 */
+        .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; flex-direction: column; border-left: 8px solid var(--success); box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; position: relative; }
+        .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
+        
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .info b { font-size: 19px; color: #1C1C1E; display: block; }
+        
+        /* 日期網格對齊 */
+        .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 8px; }
+        .date-row { display: contents; font-size: 13px; }
+        .date-label { color: #8E8E93; font-weight: 500; }
+        .date-value { font-family: monospace; color: #3A3A3C; font-weight: bold; }
 
-            const tagClass = item.type ? `tag-${item.type}` : 'tag-default';
-            
-            return `
-                <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor(${item.id})">
-                    <div class="card-top">
-                        <div class="info">
-                            <b>${item.name} <small style="font-size:14px; color:#8E8E93">(${item.bed || '--'})</small></b>
-                            ${item.type ? `<span class="tube-tag ${tagClass}">${item.type}</span>` : ''}
-                        </div>
-                        <div class="status-badge">${statusLabel}</div>
-                    </div>
-                    
-                    <div class="date-grid">
-                        <div class="date-row"><span class="date-label">置放日期</span><span class="date-value">${item.startdate || '--'}</span></div>
-                        <div class="date-row"><span class="date-label">到期日期</span><span class="date-value">${item.date || '--'}</span></div>
-                    </div>
-                    
-                    <div class="bottom-info">
-                        醫師：${item.dr || '--'} | 診斷：${item.diag || '--'}
-                    </div>
-                </div>
-            `;
-        }).join('') : '<p style="text-align:center; color:#8E8E93">無病患資料</p>';
-    }
+        /* 管路標籤顏色 */
+        .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 1px solid rgba(0,0,0,0.1); margin-top: 5px; }
+        .tag-NG { background-color: #87CEEB; color: #000; }
+        .tag-Foley, .tag-PCND { background-color: #FFFF00; color: #000; }
+        .tag-Tr { background-color: #FFFFFF; color: #000; }
+        .tag-Port-A, .tag-PICC { background-color: #FFC0CB; color: #000; }
+        .tag-Pigtail { background-color: #FFA500; color: #FFF; }
+        .tag-PTCD { background-color: #90EE90; color: #000; }
+        .tag-default { background-color: #E5E5EA; color: #333; }
 
-    function openEditor(id = null) {
-        document.getElementById('editor').style.display = 'flex';
-        const fields = ['eId','eName','eBed','eDr','eDiag','eContact','eAddr','eType','eStartDate','eDate','eMemo'];
-        if (id) {
-            const cur = pList.find(i => i.id === id);
-            document.getElementById('mTitle').innerText = "修改個資";
-            fields.forEach(f => {
-                const key = f.replace('e', '').toLowerCase();
-                document.getElementById(f).value = cur[key] || "";
-            });
-        } else {
-            document.getElementById('mTitle').innerText = "新增病患個資";
-            fields.forEach(f => document.getElementById(f).value = "");
-        }
-    }
-
-    function closeEditor() { document.getElementById('editor').style.display = 'none'; }
-
-    function save() {
-        const data = {
-            id: document.getElementById('eId').value ? Number(document.getElementById('eId').value) : Date.now(),
-            name: document.getElementById('eName').value,
-            bed: document.getElementById('eBed').value,
-            dr: document.getElementById('eDr').value,
-            diag: document.getElementById('eDiag').value,
-            contact: document.getElementById('eContact').value,
-            addr: document.getElementById('eAddr').value,
-            type: document.getElementById('eType').value,
-            startdate: document.getElementById('eStartDate').value,
-            date: document.getElementById('eDate').value,
-            memo: document.getElementById('eMemo').value
-        };
-        if (!data.name) return alert("姓名為必填項目！");
-        const idx = pList.findIndex(i => i.id === data.id);
-        if (idx > -1) pList[idx] = data; else pList.push(data);
-        render(); closeEditor();
-    }
-
-    function del() {
-        const id = document.getElementById('eId').value;
-        if (id && confirm("確定要永久刪除此病患嗎？")) {
-            pList = pList.filter(i => i.id != id);
-            render(); closeEditor();
-        }
-    }
-    render();
-</script>
+        .status-badge { position: absolute; top: 15px; right: 15px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA;
