@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瑄瑄3C | 影像與飛行的專家</title>
+    <style>
+        :root { --main-blue: #00d2ff; --line-green: #06C755; }
+        body { margin: 0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #050505; color: white; }
+        
+        /* 導航列 */
+        header { padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); position: fixed; width: 100%; box-sizing: border-box; z-index: 1000; border-bottom: 1px solid #222; }
+        .logo { font-size: 22px; font-weight: 800; letter-spacing: 2px; color: var(--main-blue); }
+        
+        /* 英雄區 */
+        .hero { height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1473968512647-3e44a224fe8f?auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center; }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 10px; text-shadow: 0 0 20px rgba(0,210,255,0.5); }
+        .hero p { font-size: 1.2rem; color: #aaa; margin-bottom: 30px; }
+
+        /* 代飛服務專區 (重點) */
+        .service-section { padding: 60px 5%; text-align: center; background: #111; }
+        .line-btn { background: var(--line-green); color: white; padding: 18px 40px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 1.2rem; display: inline-flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .line-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(6,199,85,0.4); }
+
+        /* 產品卡片 */
+        .products { padding: 60px 5%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .card { background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid #333; position: relative; overflow: hidden; }
+        .card h3 { color: var(--main-blue); font-size: 1.4rem; }
+        .tag { background: #333; font-size: 0.8rem; padding: 3px 10px; border-radius: 5px; margin-bottom: 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">瑄瑄3C</div>
+    <nav style="font-size: 0.9rem;">
+        <span style="color:#888;">專業零售 | 空拍代飛</span>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>瑄瑄3C</h1>
+    <p>捕捉不可能的視角，體驗未來的視覺科技</p>
+    <a href="#contact" class="line-btn">諮詢報價與購買</a>
+</section>
+
+<section class="products">
+    <div class="card">
+        <div class="tag">全
