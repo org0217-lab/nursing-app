@@ -2,94 +2,77 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>瑄瑄3C | 影像與飛行的專家</title>
     <style>
-        :root { --main-blue: #00e6ff; --line-green: #06C755; --bg-dark: #000000; }
+        :root { --main-blue: #00e6ff; --line-green: #06C755; }
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg-dark); color: white; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; color: white; font-family: sans-serif; }
         
-        /* 導航列：固定在上方，半透明 */
-        header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #222; backdrop-filter: blur(5px); }
-        .logo { font-size: 20px; font-weight: 900; letter-spacing: 1px; color: var(--main-blue); text-decoration: none; }
-        nav { display: flex; gap: 15px; }
-        nav a { color: #eee; text-decoration: none; font-size: 14px; font-weight: 500; }
-        
-        /* 英雄區：全螢幕背景圖片 */
+        /* 導航 */
+        header { 
+            position: fixed; top: 0; width: 100%; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.85); z-index: 999; border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 20px; font-weight: bold; color: var(--main-blue); text-decoration: none; }
+
+        /* 核心區塊：解決全黑問題 */
         .hero { 
-            height: 100vh; /* 手機端可能會有些微誤差，下方有修正 */
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            text-align: center; 
-            /* 圖片網址，確保正確載入 */
-            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://i.imgur.com/rXwHqf9.png'); 
-            background-size: cover; /* 關鍵：確保圖片填滿，不留黑邊 */
-            background-position: center; /* 關鍵：圖片置中 */
-            background-repeat: no-repeat;
-            position: relative;
+            width: 100%; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            /* 修正：先給一個深色漸層底色，再跑圖片 */
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), 
+                        #1a1a1a url('https://w0.peakpx.com/wallpaper/515/795/HD-wallpaper-dji-mavic-3-drone-pro-camera.jpg');
+            background-size: cover;
+            background-position: center;
+            text-align: center;
             padding: 0 20px;
         }
-        
-        /* 英雄區內容框 */
-        .hero-content { 
-            background: rgba(0,0,0,0.4); 
-            padding: 40px 20px; 
-            border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,0.08); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 400px;
+
+        .hero-box {
+            background: rgba(0,0,0,0.6);
+            padding: 30px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
             width: 100%;
+            max-width: 350px;
         }
-        
-        /* 主標題：加強發光效果 */
-        .hero h1 { 
-            font-size: 48px; 
-            margin: 0 0 15px 0; 
-            font-weight: 900;
-            color: #fff;
-            text-shadow: 0 0 15px rgba(0,230,255,0.7), 0 0 30px rgba(0,230,255,0.5), 0 0 45px rgba(0,230,255,0.3); 
-        }
-        
-        /* 副標題 */
-        .hero p { 
-            font-size: 16px; 
-            color: #f0f0f0; 
-            margin-bottom: 35px; 
-            line-height: 1.6;
-            font-weight: 400;
-            letter-spacing: 0.5px;
-        }
-        
-        /* 按鈕容器 */
-        .btn-container { display: flex; gap: 15px; justify-content: center; width: 100%; }
-        
-        /* 通用按鈕樣式 */
+
+        h1 { font-size: 40px; margin: 0 0 10px 0; text-shadow: 0 0 20px var(--main-blue); }
+        p { font-size: 16px; margin-bottom: 30px; color: #ccc; }
+
+        /* 按鈕優化 */
+        .btn-group { display: flex; gap: 10px; }
         .btn { 
-            flex: 1;
-            padding: 15px 0; 
-            border-radius: 50px; 
-            text-decoration: none; 
-            font-weight: 700; 
-            font-size: 16px; 
-            transition: all 0.2s ease; 
-            border: none; 
-            text-align: center;
-            display: inline-block;
+            flex: 1; padding: 15px 0; border-radius: 10px; 
+            text-decoration: none; font-weight: bold; text-align: center;
+            transition: 0.2s;
         }
-        .btn:active { transform: scale(0.96); }
-        
-        /* 探索產品按鈕 */
-        .btn-blue { background-color: var(--main-blue); color: #000; box-shadow: 0 4px 15px rgba(0,230,255,0.3); }
-        
-        /* 代飛報價按鈕 */
-        .btn-green { background-color: var(--line-green); color: #fff; box-shadow: 0 4px 15px rgba(6,199,85,0.3); }
+        .btn-blue { background: var(--main-blue); color: #000; }
+        .btn-green { background: var(--line-green); color: #fff; }
+        .btn:active { transform: scale(0.95); }
 
-        /* 底部裝飾線 */
-        .scroll-down { position: absolute; bottom: 30px; width: 1px; height: 60px; background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body>
 
-        /* 手機端修正：確保 height: 100vh 正確 */
-        @media only screen and (max-width: 767px) {
-            .hero { height: calc(100vh - 50px); margin-top: 50px; }
-            .hero h1 { font-size: 38px; }
+<header>
+    <a href="#" class="logo">瑄瑄3C</a>
+    <div style="font-size: 12px; color: #888;">專業零售 | 空拍代飛</div>
+</header>
+
+<section class="hero">
+    <div class="hero-box">
+        <h1>瑄瑄3C</h1>
+        <p>捕捉不可能的視角<br>體驗未來的視覺科技</p>
+        <div class="btn-group">
+            <a href="#" class="btn btn-blue">產品展示</a>
+            <a href="https://line.me/R/ti/p/@您的ID" class="btn btn-green">代飛報價</a>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>
