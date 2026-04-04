@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>喵廁 MeowLog - 貓砂管理系統</title>
+    <style>
+        :root {
+            --primary-color: #ffb367;
+            --bg-color: #fff9f2;
+            --card-bg: #ffffff;
+            --text-color: #5d4037;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* 儀表板卡片 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .card h3 { margin: 0; font-size: 0.9rem; color: #8d6e63; }
+        .card p { margin: 10px 0 0; font-size: 1.5rem; font-weight: bold; color: var(--primary-color); }
+
+        /* 表單設計 */
+        .log-form {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        /* 紀錄列表 */
+        .history {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 10px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .history-item:last-child { border-bottom: none; }
+        .time { font-size: 0.8rem; color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🐾 MeowLog</h1>
+        <p>今日貓咪如廁管家</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>今日尿尿</h3>
+            <p id="pee-count">0 次</p>
+        </div>
+        <div class="card">
+            <h3>今日便便</h3>
+            <p id="poop-count">0 次</p>
+        </div>
+    </div>
+
+    <div class="log-form">
+        <div class="form-group">
+            <label>選擇貓咪</label>
+            <select id="cat-name">
+                <option value="小黑">小黑</option>
+                <option value="咪咪">咪咪</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>排泄類型</label>
+            <select id="log-type">
+                <option value="尿尿">💦 尿尿</option>
+                <option value="便便">💩 便便</option>
+                <option value="兩者都有">✨ 兩者都有</option>
+            </select>
+        </div>
+        <button onclick="addLog()">新增紀錄</button>
+    </div>
+
+    <h3>最近紀錄</h3>
+    <div class="history" id="history-list">
+        </div>
+</div>
+
+<script>
+    let logs = [];
+
+    function addLog() {
+        const cat = document.getElementById('cat-name').value;
+        const type = document.getElementById('log-type').value;
+        const now = new Date();
+        const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        const newLog = { cat, type, time: timeStr };
+        logs.unshift(newLog); // 加到最前面
+
+        updateUI();
+    }
+
+    function updateUI() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+
+        let pee = 0;
+        let poop = 0;
+
+        logs.forEach(log => {
+            // 更新清單 HTML
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <div><strong>${log.cat}</strong> - ${log.type}</div>
+                <div class="time">${log.time}</div>
+            `;
+            list.appendChild(item);
+
+            // 統計數據
+            if (log.type.includes('尿尿') || log.type === '兩者都有') pee++;
+            if (log.type.includes('便便') || log.type === '兩者都有') poop++;
+        });
+
+        document.getElementById('pee-count').innerText = `${pee} 次`;
+        document.getElementById('poop-count').innerText = `${poop} 次`;
+    }
+</script>
+
+</body>
+</html>
