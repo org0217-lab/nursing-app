@@ -7,64 +7,81 @@
     <style>
         :root { --main-blue: #00e6ff; --line-green: #06C755; }
         * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; color: white; font-family: sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #050505; color: white; font-family: sans-serif; overflow: hidden; }
         
-        /* 導航 */
-        header { 
-            position: fixed; top: 0; width: 100%; padding: 15px 20px; 
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.85); z-index: 999; border-bottom: 1px solid #333;
-        }
-        .logo { font-size: 20px; font-weight: bold; color: var(--main-blue); text-decoration: none; }
-
-        /* 核心區塊：解決全黑問題 */
+        /* 科技感動態背景 (不依賴圖檔) */
         .hero { 
             width: 100%; height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            /* 修正：先給一個深色漸層底色，再跑圖片 */
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), 
-                        #1a1a1a url('https://w0.peakpx.com/wallpaper/515/795/HD-wallpaper-dji-mavic-3-drone-pro-camera.jpg');
-            background-size: cover;
-            background-position: center;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            position: relative;
             text-align: center;
             padding: 0 20px;
         }
 
+        /* 增加光影點綴 */
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 15%; left: 10%; width: 200px; height: 200px;
+            background: var(--main-blue);
+            filter: blur(120px);
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        header { 
+            position: fixed; top: 0; width: 100%; padding: 20px; 
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.8); z-index: 999;
+        }
+        .logo { font-size: 22px; font-weight: bold; color: var(--main-blue); text-decoration: none; }
+
         .hero-box {
-            background: rgba(0,0,0,0.6);
-            padding: 30px 20px;
-            border-radius: 15px;
+            background: rgba(255,255,255,0.03);
+            padding: 40px 25px;
+            border-radius: 24px;
             border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             width: 100%;
-            max-width: 350px;
+            max-width: 360px;
+            z-index: 1;
         }
 
-        h1 { font-size: 40px; margin: 0 0 10px 0; text-shadow: 0 0 20px var(--main-blue); }
-        p { font-size: 16px; margin-bottom: 30px; color: #ccc; }
+        h1 { 
+            font-size: 46px; margin: 0 0 15px 0; 
+            text-shadow: 0 0 20px rgba(0,230,255,0.6);
+            letter-spacing: 2px;
+        }
+        p { font-size: 17px; margin-bottom: 35px; color: #bbb; line-height: 1.5; }
 
-        /* 按鈕優化 */
-        .btn-group { display: flex; gap: 10px; }
+        .btn-group { display: flex; gap: 12px; }
         .btn { 
-            flex: 1; padding: 15px 0; border-radius: 10px; 
+            flex: 1; padding: 16px 0; border-radius: 12px; 
             text-decoration: none; font-weight: bold; text-align: center;
-            transition: 0.2s;
+            transition: 0.3s; font-size: 16px;
         }
-        .btn-blue { background: var(--main-blue); color: #000; }
-        .btn-green { background: var(--line-green); color: #fff; }
+        .btn-blue { background: var(--main-blue); color: #000; box-shadow: 0 4px 20px rgba(0,230,255,0.2); }
+        .btn-green { background: var(--line-green); color: #fff; box-shadow: 0 4px 20px rgba(6,199,85,0.2); }
         .btn:active { transform: scale(0.95); }
 
+        /* 模擬空拍機小裝飾 */
+        .drone-icon {
+            font-size: 12px; color: var(--main-blue); opacity: 0.5;
+            margin-bottom: 10px; display: block;
+        }
     </style>
 </head>
 <body>
 
 <header>
     <a href="#" class="logo">瑄瑄3C</a>
-    <div style="font-size: 12px; color: #888;">專業零售 | 空拍代飛</div>
+    <div style="font-size: 12px; color: #666; letter-spacing: 1px;">DJI | Insta360 | 樂奇AI</div>
 </header>
 
 <section class="hero">
     <div class="hero-box">
+        <span class="drone-icon">▲ 專業空拍預備中</span>
         <h1>瑄瑄3C</h1>
         <p>捕捉不可能的視角<br>體驗未來的視覺科技</p>
         <div class="btn-group">
