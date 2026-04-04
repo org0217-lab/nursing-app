@@ -3,93 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>瑄瑄3C | 影像與飛行的專家</title>
+    <title>瑄瑄3C | 影像與飛行專家</title>
     <style>
         :root { --main-blue: #00e6ff; --line-green: #06C755; }
         * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #050505; color: white; font-family: sans-serif; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; background-color: #050505; color: white; font-family: sans-serif; }
         
-        /* 科技感動態背景 (不依賴圖檔) */
+        /* 保持目前的 Hero 區塊 */
         .hero { 
             width: 100%; height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-            position: relative;
-            text-align: center;
-            padding: 0 20px;
+            background: radial-gradient(circle at 50% 40%, #15202b 0%, #000 100%);
+            position: relative; text-align: center; padding: 0 20px;
         }
-
-        /* 增加光影點綴 */
-        .hero::before {
-            content: "";
-            position: absolute;
-            top: 15%; left: 10%; width: 200px; height: 200px;
-            background: var(--main-blue);
-            filter: blur(120px);
-            opacity: 0.15;
-            z-index: 0;
-        }
-
-        header { 
-            position: fixed; top: 0; width: 100%; padding: 20px; 
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.8); z-index: 999;
-        }
-        .logo { font-size: 22px; font-weight: bold; color: var(--main-blue); text-decoration: none; }
 
         .hero-box {
-            background: rgba(255,255,255,0.03);
-            padding: 40px 25px;
-            border-radius: 24px;
+            background: rgba(255,255,255,0.02);
+            padding: 40px 25px; border-radius: 24px;
             border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            width: 100%;
-            max-width: 360px;
-            z-index: 1;
+            backdrop-filter: blur(15px); width: 100%; max-width: 360px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
 
-        h1 { 
-            font-size: 46px; margin: 0 0 15px 0; 
-            text-shadow: 0 0 20px rgba(0,230,255,0.6);
-            letter-spacing: 2px;
-        }
-        p { font-size: 17px; margin-bottom: 35px; color: #bbb; line-height: 1.5; }
+        h1 { font-size: 42px; margin: 0 0 10px 0; text-shadow: 0 0 20px var(--main-blue); }
+        p { font-size: 16px; margin-bottom: 30px; color: #bbb; line-height: 1.5; }
 
         .btn-group { display: flex; gap: 12px; }
         .btn { 
             flex: 1; padding: 16px 0; border-radius: 12px; 
-            text-decoration: none; font-weight: bold; text-align: center;
-            transition: 0.3s; font-size: 16px;
+            text-decoration: none; font-weight: bold; text-align: center; transition: 0.3s;
         }
-        .btn-blue { background: var(--main-blue); color: #000; box-shadow: 0 4px 20px rgba(0,230,255,0.2); }
-        .btn-green { background: var(--line-green); color: #fff; box-shadow: 0 4px 20px rgba(6,199,85,0.2); }
-        .btn:active { transform: scale(0.95); }
+        .btn-blue { background: var(--main-blue); color: #000; }
+        .btn-green { background: var(--line-green); color: #fff; }
 
-        /* 模擬空拍機小裝飾 */
-        .drone-icon {
-            font-size: 12px; color: var(--main-blue); opacity: 0.5;
-            margin-bottom: 10px; display: block;
+        /* 下方產品簡介區 */
+        .product-list { padding: 40px 20px; display: grid; gap: 15px; }
+        .product-item {
+            background: #111; padding: 20px; border-radius: 15px;
+            border-left: 4px solid var(--main-blue);
         }
+        .product-item h3 { margin: 0 0 5px 0; color: var(--main-blue); font-size: 18px; }
+        .product-item p { margin: 0; font-size: 14px; color: #888; }
     </style>
 </head>
 <body>
 
-<header>
-    <a href="#" class="logo">瑄瑄3C</a>
-    <div style="font-size: 12px; color: #666; letter-spacing: 1px;">DJI | Insta360 | 樂奇AI</div>
-</header>
-
 <section class="hero">
     <div class="hero-box">
-        <span class="drone-icon">▲ 專業空拍預備中</span>
+        <div style="font-size: 12px; color: var(--main-blue); margin-bottom: 8px;">▲ 專業影像設備零售</div>
         <h1>瑄瑄3C</h1>
         <p>捕捉不可能的視角<br>體驗未來的視覺科技</p>
         <div class="btn-group">
-            <a href="#" class="btn btn-blue">產品展示</a>
+            <a href="#products" class="btn btn-blue">產品清單</a>
             <a href="https://line.me/R/ti/p/@您的ID" class="btn btn-green">代飛報價</a>
         </div>
     </div>
 </section>
+
+<div id="products" class="product-list">
+    <div class="product-item">
+        <h3>Insta360 全系列</h3>
+        <p>X4, X3, GO 3S 全景運動相機現貨供應</p>
+    </div>
+    <div class="product-item">
+        <h3>DJI 專業空拍機</h3>
+        <p>Mini / Air / Mavic 系列及專業維修諮詢</p>
+    </div>
+    <div class="product-item">
+        <h3>樂奇 AI 智慧眼鏡</h3>
+        <p>第一人稱拍攝、即時語音助理與導航</p>
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 30px; color: #444; font-size: 12px;">
+    © 2026 瑄瑄3C | 實體服務與空拍技術支援
+</footer>
 
 </body>
 </html>
