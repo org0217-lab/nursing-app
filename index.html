@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>中山醫管路維護系統</title>
+    <title>臨床管路管理系統</title>
     <style>
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; }
         
-        /* 雙 Logo 標題區塊 */
+        /* 雙貓 Logo 標題區塊 */
         .header { 
             display: flex; 
             align-items: center; 
@@ -20,11 +20,10 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .header img { 
-            height: 45px; 
-            width: 45px; 
+            height: 50px; 
+            width: 50px; 
             object-fit: cover; 
-            border-radius: 10px; 
-            border: 1px solid #EEE;
+            border-radius: 12px;
         }
         .header h2 { 
             margin: 0; 
@@ -33,6 +32,7 @@
             flex-grow: 1; 
             text-align: center;
             font-weight: 800;
+            line-height: 1.2;
         }
 
         #loader { display: none; text-align: center; color: var(--primary); font-size: 13px; font-weight: bold; margin-bottom: 10px; }
@@ -43,10 +43,13 @@
         .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
         .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .info b { font-size: 19px; color: #1C1C1E; display: block; }
-        .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 8px; }
+        
+        /* 資料網格：新增醫生與診斷列 */
+        .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin-top: 8px; }
         .date-row { display: contents; font-size: 13px; }
-        .date-label { color: #8E8E93; font-weight: 500; }
-        .date-value { font-family: monospace; color: #3A3A3C; font-weight: bold; }
+        .date-label { color: #8E8E93; font-weight: 500; min-width: 40px; }
+        .date-value { font-family: sans-serif; color: #3A3A3C; font-weight: bold; word-break: break-all; }
+        
         .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; background: #E5E5EA; color: #3A3A3C; }
         .status-badge { position: absolute; top: 15px; right: 15px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; color: #3A3A3C; font-weight: bold; }
         .urgent .status-badge { background: var(--danger); color: white; }
@@ -65,9 +68,9 @@
 
     <div class="container">
         <div class="header">
-            <img src="https://upload.wikimedia.org/wikipedia/zh/thumb/e/ee/Chung_Shan_Medical_University_seal.svg/1280px-Chung_Shan_Medical_University_seal.svg.png" alt="CSMU">
-            <h2>管路維護雲端版</h2>
-            <img src="logo.png" alt="Cat">
+            <img src="logo.png" alt="Cat Left">
+            <h2>臨床管路<br>追蹤管理系統</h2>
+            <img src="logo.png" alt="Cat Right">
         </div>
         
         <div id="loader">⌛ 同步雲端資料中...</div>
@@ -80,8 +83,8 @@
         <div class="modal">
             <h3 id="mTitle" style="margin:0">編輯資料</h3>
             <input type="hidden" id="eId">
-            <label>病患姓名</label><input type="text" id="eName" placeholder="請輸入姓名">
-            <label>床號</label><input type="text" id="eBed" placeholder="例如：502-1">
+            <label>病患姓名</label><input type="text" id="eName">
+            <label>床號</label><input type="text" id="eBed">
             <label>管路類型</label>
             <select id="eType">
                 <option value="NG">NG</option><option value="Foley">Foley</option>
@@ -98,7 +101,7 @@
             <label>備註事項</label><textarea id="eMemo" style="height:60px"></textarea>
             <div class="btn-group">
                 <button class="cancel" onclick="closeEditor()">取消</button>
-                <button class="save" onclick="save()">儲存並同步</button>
+                <button class="save" onclick="save()">儲存同步</button>
             </div>
             <button style="background:none; color:var(--danger); width:100%; margin-top:15px; border:none; font-size:13px;" onclick="del()">⚠️ 刪除此紀錄</button>
         </div>
@@ -129,7 +132,7 @@
                 let isUrgent = false; let statusLabel = '追蹤中';
                 if (item.date) {
                     const diffDays = Math.ceil((new Date(item.date) - now) / 86400000);
-                    if (diffDays <= 7) { isUrgent = true; statusLabel = diffDays < 0 ? '⚠️ 已逾期' : `⚠️ ${diffDays}天內到期`; }
+                    if (diffDays <= 7) { isUrgent = true; statusLabel = diffDays < 0 ? '⚠️ 已逾期' : `⚠️ ${diffDays}天內`; }
                 }
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
@@ -143,6 +146,8 @@
                         <div class="date-grid">
                             <div class="date-row"><span class="date-label">置放</span><span class="date-value">${item.startdate || '--'}</span></div>
                             <div class="date-row"><span class="date-label">到期</span><span class="date-value">${item.date || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">醫生</span><span class="date-value">${item.dr || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">診斷</span><span class="date-value">${item.diag || '--'}</span></div>
                         </div>
                     </div>`;
             }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前雲端無資料</p>';
@@ -182,7 +187,10 @@
             if (id) {
                 const cur = pList.find(i => i.id == id);
                 document.getElementById('mTitle').innerText = "修改資料";
-                fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
+                fields.forEach(f => { 
+                    const key = f.replace('e', '').toLowerCase(); 
+                    document.getElementById(f).value = cur[key] || ""; 
+                });
             } else {
                 document.getElementById('mTitle').innerText = "新增資料";
                 fields.forEach(f => document.getElementById(f).value = "");
