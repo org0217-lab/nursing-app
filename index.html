@@ -3,81 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>臨床管路管理系統 (本機雙Logo版)</title>
-    
-
-
-
+    <title>中山醫管路維護雲端版</title>
     <style>
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; }
-        
-        /* 雙本機 Logo 標題區塊排版 */
-        .header { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; /* 圖片分居左右，文字在中間 */
-            padding: 10px;
-            background: white;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .header img { 
-            height: 45px; 
-            width: 45px; 
-            object-fit: cover; /* 確保圖片填滿區域且不變形 */
-            border-radius: 10px; /* 稍微加點圓角，比圓形更能呈現圖片內容 */
-            border: 1px solid #EEE;
-            background-color: #F9F9F9; /* 圖片載入前的背景色 */
-        }
-        .header h2 { 
-            margin: 0; 
-            font-size: 18px; 
-            color: #1C1C1E; 
-            flex-grow: 1; 
-            text-align: center;
-            font-weight: 800;
-            padding: 0 8px; /* 文字與圖片的間距 */
-        }
-
-        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,122,255,0.2); cursor: pointer; }
-        
-        /* 卡片設計 */
-        .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; flex-direction: column; border-left: 8px solid var(--success); box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; position: relative; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .header img { height: 45px; width: 45px; object-fit: cover; border-radius: 10px; }
+        .header h2 { margin: 0; font-size: 18px; flex-grow: 1; text-align: center; font-weight: 800; }
+        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; cursor: pointer; }
+        .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 8px solid var(--success); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
-        
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .info b { font-size: 19px; color: #1C1C1E; display: block; }
-        
-        .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 8px; }
-        .date-row { display: contents; font-size: 13px; }
-        .date-label { color: #8E8E93; font-weight: 500; }
-        .date-value { font-family: monospace; color: #3A3A3C; font-weight: bold; }
-
-        /* 管路標籤顏色 */
-        .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 1px solid rgba(0,0,0,0.1); margin-top: 5px; }
-        .tag-NG { background-color: #87CEEB; color: #000; }
-        .tag-Foley, .tag-PCND { background-color: #FFFF00; color: #000; }
-        .tag-Tr { background-color: #FFFFFF; color: #000; }
-        .tag-Port-A, .tag-PICC { background-color: #FFC0CB; color: #000; }
-        .tag-Pigtail { background-color: #FFA500; color: #FFF; }
-        .tag-PTCD { background-color: #90EE90; color: #000; }
-
-        .status-badge { position: absolute; top: 15px; right: 15px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; color: #3A3A3C; font-weight: bold; }
-        .urgent .status-badge { background: var(--danger); color: white; }
-
-        .bottom-info { font-size: 12px; color: #A1A1A1; margin-top: 10px; border-top: 1px dashed #EEE; padding-top: 8px; }
-
-        /* 彈出視窗與其餘 JS 邏輯不變... */
+        .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; background: #E5E5EA; }
+        .tag-NG { background: #87CEEB; } .tag-Foley { background: #FFFF00; }
+        #loader { display: none; text-align: center; color: var(--primary); font-weight: bold; margin-bottom: 10px; }
+        /* 編輯視窗樣式略... (保持與之前一致) */
         #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 100; }
-        .modal { background: white; width: 92%; max-width: 450px; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
-        label { display: block; margin-top: 12px; font-size: 13px; color: #8E8E93; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 10px; box-sizing: border-box; font-size: 16px; background: #F9F9F9; font-family: inherit; }
-        
+        .modal { background: white; width: 92%; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 10px; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 16px; }
-        .cancel { background: #E5E5EA; color: #333; flex: 1; border: none; padding: 12px; border-radius: 10px; font-size: 16px; }
+        .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
+        .cancel { background: #E5E5EA; flex: 1; border: none; padding: 12px; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -85,12 +30,10 @@
     <div class="container">
         <div class="header">
             <img src="logo2.png" alt="Left Logo">
-            
-            <h2>管路維護系統</h2>
-            
+            <h2>管路維護雲端版</h2>
             <img src="logo.png" alt="Right Logo">
         </div>
-        
+        <div id="loader">⌛ 同步中...</div>
         <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
         <div id="patientList"></div>
     </div>
@@ -99,102 +42,121 @@
         <div class="modal">
             <h3 id="mTitle" style="margin:0">編輯資料</h3>
             <input type="hidden" id="eId">
-            <label>病患姓名 (必填)</label><input type="text" id="eName" placeholder="請輸入姓名">
-            <label>床號</label><input type="text" id="eBed" placeholder="例如：502-1">
+            <label>病患姓名</label><input type="text" id="eName">
+            <label>床號</label><input type="text" id="eBed">
             <label>管路類型</label>
             <select id="eType">
-                <option value="">-- 無 --</option>
                 <option value="NG">NG</option><option value="Foley">Foley</option>
                 <option value="PCND">PCND</option><option value="Tr">Tr</option>
                 <option value="Port-A">Port-A</option><option value="PICC">PICC</option>
                 <option value="Pigtail">Pigtail</option><option value="PTCD">PTCD</option>
             </select>
             <div style="display:flex; gap:10px">
-                <div style="flex:1"><label>置放日期</label><input type="date" id="eStartDate"></div>
-                <div style="flex:1"><label>到期日期</label><input type="date" id="eDate"></div>
+                <div style="flex:1"><label>置放日</label><input type="date" id="eStartDate"></div>
+                <div style="flex:1"><label>到期日</label><input type="date" id="eDate"></div>
             </div>
-            <label>主治醫師</label><input type="text" id="eDr">
-            <label>診斷項目</label><input type="text" id="eDiag">
-            <label>備註事項</label><textarea id="eMemo" style="height:60px"></textarea>
+            <label>醫師</label><input type="text" id="eDr">
+            <label>診斷</label><input type="text" id="eDiag">
+            <label>備註</label><textarea id="eMemo"></textarea>
             <div class="btn-group">
                 <button class="cancel" onclick="closeEditor()">取消</button>
-                <button class="save" onclick="save()">儲存資料</button>
+                <button class="save" onclick="save()">儲存同步</button>
             </div>
-            <button style="background:none; color:var(--danger); width:100%; margin-top:15px; border:none; font-size:13px; cursor:pointer;" onclick="del()">⚠️ 刪除此紀錄</button>
+            <button style="background:none; color:var(--danger); width:100%; margin-top:15px; border:none;" onclick="del()">⚠️ 刪除紀錄</button>
         </div>
     </div>
 
     <script>
-        const STORAGE_KEY = 'csmu_local_tracker_v4';
-        let pList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        // ⚠️ 這裡請換成妳在 SheetDB 申請的 API 網址
+        const API_URL = "https://sheetdb.io/api/v1/3rgwakwkhx1vz"; 
+        let pList = [];
+
+        async function fetchFromCloud() {
+            document.getElementById('loader').style.display = 'block';
+            try {
+                const res = await fetch(API_URL);
+                pList = await res.json();
+                render();
+            } catch (e) { alert("讀取雲端失敗"); }
+            document.getElementById('loader').style.display = 'none';
+        }
 
         function render() {
             const container = document.getElementById('patientList');
             const now = new Date(); now.setHours(0,0,0,0);
-            pList.sort((a, b) => {
-                if (!a.date) return 1; if (!b.date) return -1;
-                return new Date(a.date) - new Date(b.date);
-            });
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(pList));
-            container.innerHTML = pList.length ? pList.map(item => {
-                let isUrgent = false; let statusLabel = '追蹤中';
+            pList.sort((a, b) => new Date(a.date) - new Date(b.date));
+            container.innerHTML = pList.map(item => {
+                let isUrgent = false;
                 if (item.date) {
-                    const diffDays = Math.ceil((new Date(item.date) - now) / 86400000);
-                    if (diffDays <= 7) { isUrgent = true; statusLabel = diffDays < 0 ? '⚠️ 已逾期' : `⚠️ ${diffDays}天內到期`; }
+                    const diff = Math.ceil((new Date(item.date) - now) / 86400000);
+                    if (diff <= 7) isUrgent = true;
                 }
-                const tagClass = item.type ? `tag-${item.type}` : '';
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
-                        <div class="card-top">
-                            <div class="info">
-                                <b>${item.name} <small style="color:#8E8E93">(${item.bed || '--'})</small></b>
-                                ${item.type ? `<span class="tube-tag ${tagClass}">${item.type}</span>` : ''}
-                            </div>
-                            <div class="status-badge">${statusLabel}</div>
-                        </div>
-                        <div class="date-grid">
-                            <div class="date-row"><span class="date-label">置放</span><span class="date-value">${item.startdate || '--'}</span></div>
-                            <div class="date-row"><span class="date-label">到期</span><span class="date-value">${item.date || '--'}</span></div>
-                        </div>
-                        <div class="bottom-info">醫師：${item.dr || '--'} | 診斷：${item.diag || '--'}</div>
+                        <b>${item.name} (${item.bed || '--'})</b><br>
+                        <span class="tube-tag tag-${item.type}">${item.type}</span><br>
+                        <small>到期：${item.date || '--'}</small>
                     </div>`;
-            }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前無資料，點擊上方按鈕新增</p>';
+            }).join('');
         }
 
-        function save() {
-            const name = document.getElementById('eName').value;
+        async function save() {
             const id = document.getElementById('eId').value || Date.now().toString();
-            if (!name) return alert("姓名必填！");
             const data = {
-                id, name, bed: document.getElementById('eBed').value, dr: document.getElementById('eDr').value,
-                diag: document.getElementById('eDiag').value, type: document.getElementById('eType').value,
-                startdate: document.getElementById('eStartDate').value, date: document.getElementById('eDate').value,
+                id, name: document.getElementById('eName').value,
+                bed: document.getElementById('eBed').value,
+                type: document.getElementById('eType').value,
+                startdate: document.getElementById('eStartDate').value,
+                date: document.getElementById('eDate').value,
+                dr: document.getElementById('eDr').value,
+                diag: document.getElementById('eDiag').value,
                 memo: document.getElementById('eMemo').value
             };
-            const idx = pList.findIndex(i => i.id === id);
-            if (idx > -1) pList[idx] = data; else pList.push(data);
-            render(); closeEditor();
+
+            document.getElementById('loader').style.display = 'block';
+            // 如果是編輯，先刪除舊的
+            if (document.getElementById('eId').value) {
+                await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
+            }
+            // 新增
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [data] })
+            });
+            await fetchFromCloud();
+            closeEditor();
         }
 
-        function del() {
+        async function del() {
             const id = document.getElementById('eId').value;
-            if (id && confirm("確定要刪除嗎？")) { pList = pList.filter(i => i.id !== id); render(); closeEditor(); }
+            if (id && confirm("確定刪除雲端資料？")) {
+                await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
+                await fetchFromCloud();
+                closeEditor();
+            }
         }
 
         function openEditor(id = null) {
             document.getElementById('editor').style.display = 'flex';
-            const fields = ['eId','eName','eBed','eDr','eDiag','eType','eStartDate','eDate','eMemo'];
             if (id) {
-                const cur = pList.find(i => i.id === id);
-                document.getElementById('mTitle').innerText = "修改資料";
-                fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
+                const cur = pList.find(i => i.id == id);
+                document.getElementById('eId').value = cur.id;
+                document.getElementById('eName').value = cur.name;
+                document.getElementById('eBed').value = cur.bed;
+                document.getElementById('eType').value = cur.type;
+                document.getElementById('eStartDate').value = cur.startdate;
+                document.getElementById('eDate').value = cur.date;
+                document.getElementById('eDr').value = cur.dr;
+                document.getElementById('eDiag').value = cur.diag;
+                document.getElementById('eMemo').value = cur.memo;
             } else {
-                document.getElementById('mTitle').innerText = "新增資料";
-                fields.forEach(f => document.getElementById(f).value = "");
+                document.getElementById('eId').value = "";
+                document.getElementById('eName').value = "";
             }
         }
         function closeEditor() { document.getElementById('editor').style.display = 'none'; }
-        render();
+        fetchFromCloud();
     </script>
 </body>
 </html>
