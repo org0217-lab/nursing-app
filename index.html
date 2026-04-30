@@ -44,7 +44,7 @@
         .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .info b { font-size: 19px; color: #1C1C1E; display: block; }
         
-        /* 資料網格：新增醫生與診斷列 */
+        /* 資料網格：包含身份列 */
         .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin-top: 8px; }
         .date-row { display: contents; font-size: 13px; }
         .date-label { color: #8E8E93; font-weight: 500; min-width: 40px; }
@@ -98,6 +98,7 @@
             </div>
             <label>主治醫師</label><input type="text" id="eDr">
             <label>診斷項目</label><input type="text" id="eDiag">
+            <label>身份 (例如：健保、自費)</label><input type="text" id="eStatus">
             <label>備註事項</label><textarea id="eMemo" style="height:60px"></textarea>
             <div class="btn-group">
                 <button class="cancel" onclick="closeEditor()">取消</button>
@@ -148,6 +149,7 @@
                             <div class="date-row"><span class="date-label">到期</span><span class="date-value">${item.date || '--'}</span></div>
                             <div class="date-row"><span class="date-label">醫生</span><span class="date-value">${item.dr || '--'}</span></div>
                             <div class="date-row"><span class="date-label">診斷</span><span class="date-value">${item.diag || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">身份</span><span class="date-value">${item.status || '--'}</span></div>
                         </div>
                     </div>`;
             }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前雲端無資料</p>';
@@ -158,7 +160,8 @@
             const data = {
                 id, name: document.getElementById('eName').value,
                 bed: document.getElementById('eBed').value, dr: document.getElementById('eDr').value,
-                diag: document.getElementById('eDiag').value, type: document.getElementById('eType').value,
+                diag: document.getElementById('eDiag').value, status: document.getElementById('eStatus').value,
+                type: document.getElementById('eType').value,
                 startdate: document.getElementById('eStartDate').value, date: document.getElementById('eDate').value,
                 memo: document.getElementById('eMemo').value
             };
@@ -183,7 +186,7 @@
 
         function openEditor(id = null) {
             document.getElementById('editor').style.display = 'flex';
-            const fields = ['eId','eName','eBed','eDr','eDiag','eType','eStartDate','eDate','eMemo'];
+            const fields = ['eId','eName','eBed','eDr','eDiag','eStatus','eType','eStartDate','eDate','eMemo'];
             if (id) {
                 const cur = pList.find(i => i.id == id);
                 document.getElementById('mTitle').innerText = "修改資料";
