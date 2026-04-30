@@ -72,4 +72,124 @@
         
         <div id="loader">⌛ 同步雲端資料中...</div>
         
-        <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</
+        <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
+        <div id="patientList"></div>
+    </div>
+
+    <div id="editor" onclick="if(event.target==this)closeEditor()">
+        <div class="modal">
+            <h3 id="mTitle" style="margin:0">編輯資料</h3>
+            <input type="hidden" id="eId">
+            <label>病患姓名</label><input type="text" id="eName" placeholder="請輸入姓名">
+            <label>床號</label><input type="text" id="eBed" placeholder="例如：502-1">
+            <label>管路類型</label>
+            <select id="eType">
+                <option value="NG">NG</option><option value="Foley">Foley</option>
+                <option value="PCND">PCND</option><option value="Tr">Tr</option>
+                <option value="Port-A">Port-A</option><option value="PICC">PICC</option>
+                <option value="Pigtail">Pigtail</option><option value="PTCD">PTCD</option>
+            </select>
+            <div style="display:flex; gap:10px">
+                <div style="flex:1"><label>置放日期</label><input type="date" id="eStartDate"></div>
+                <div style="flex:1"><label>到期日期</label><input type="date" id="eDate"></div>
+            </div>
+            <label>主治醫師</label><input type="text" id="eDr">
+            <label>診斷項目</label><input type="text" id="eDiag">
+            <label>備註事項</label><textarea id="eMemo" style="height:60px"></textarea>
+            <div class="btn-group">
+                <button class="cancel" onclick="closeEditor()">取消</button>
+                <button class="save" onclick="save()">儲存並同步</button>
+            </div>
+            <button style="background:none; color:var(--danger); width:100%; margin-top:15px; border:none; font-size:13px;" onclick="del()">⚠️ 刪除此紀錄</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://sheetdb.io/api/v1/3rgwakwkhx1vz"; 
+        let pList = [];
+
+        async function fetchFromCloud() {
+            document.getElementById('loader').style.display = 'block';
+            try {
+                const res = await fetch(API_URL);
+                pList = await res.json();
+                render();
+            } catch (e) { console.error("同步失敗"); }
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function render() {
+            const container = document.getElementById('patientList');
+            const now = new Date(); now.setHours(0,0,0,0);
+            pList.sort((a, b) => {
+                if (!a.date) return 1; if (!b.date) return -1;
+                return new Date(a.date) - new Date(b.date);
+            });
+            container.innerHTML = pList.length ? pList.map(item => {
+                let isUrgent = false; let statusLabel = '追蹤中';
+                if (item.date) {
+                    const diffDays = Math.ceil((new Date(item.date) - now) / 86400000);
+                    if (diffDays <= 7) { isUrgent = true; statusLabel = diffDays < 0 ? '⚠️ 已逾期' : `⚠️ ${diffDays}天內到期`; }
+                }
+                return `
+                    <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
+                        <div class="card-top">
+                            <div class="info">
+                                <b>${item.name || '未命名'} (${item.bed || '--'})</b>
+                                <span class="tube-tag">${item.type || '無'}</span>
+                            </div>
+                            <div class="status-badge">${statusLabel}</div>
+                        </div>
+                        <div class="date-grid">
+                            <div class="date-row"><span class="date-label">置放</span><span class="date-value">${item.startdate || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">到期</span><span class="date-value">${item.date || '--'}</span></div>
+                        </div>
+                    </div>`;
+            }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前雲端無資料</p>';
+        }
+
+        async function save() {
+            const id = document.getElementById('eId').value || Date.now().toString();
+            const data = {
+                id, name: document.getElementById('eName').value,
+                bed: document.getElementById('eBed').value, dr: document.getElementById('eDr').value,
+                diag: document.getElementById('eDiag').value, type: document.getElementById('eType').value,
+                startdate: document.getElementById('eStartDate').value, date: document.getElementById('eDate').value,
+                memo: document.getElementById('eMemo').value
+            };
+            document.getElementById('loader').style.display = 'block';
+            if (document.getElementById('eId').value) {
+                await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
+            }
+            await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [data] }) });
+            await fetchFromCloud();
+            closeEditor();
+        }
+
+        async function del() {
+            const id = document.getElementById('eId').value;
+            if (id && confirm("確定要從雲端刪除嗎？")) {
+                document.getElementById('loader').style.display = 'block';
+                await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
+                await fetchFromCloud();
+                closeEditor();
+            }
+        }
+
+        function openEditor(id = null) {
+            document.getElementById('editor').style.display = 'flex';
+            const fields = ['eId','eName','eBed','eDr','eDiag','eType','eStartDate','eDate','eMemo'];
+            if (id) {
+                const cur = pList.find(i => i.id == id);
+                document.getElementById('mTitle').innerText = "修改資料";
+                fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
+            } else {
+                document.getElementById('mTitle').innerText = "新增資料";
+                fields.forEach(f => document.getElementById(f).value = "");
+            }
+        }
+        function closeEditor() { document.getElementById('editor').style.display = 'none'; }
+        fetchFromCloud();
+    </script>
+</body>
+</html>
