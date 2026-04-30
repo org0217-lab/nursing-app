@@ -5,18 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>臨床管路管理系統 (本機雙Logo版)</title>
     
-<div style="background:yellow; padding:20px; position:fixed; top:0; z-index:999; width:100%;">
-    <h3>資料提取器</h3>
-    <textarea id="dataExport" style="width:100%; height:100px;"></textarea>
-    <button onclick="exportData()">點我提取全部資料</button>
+<div style="background:#FFCC00; padding:15px; position:fixed; top:0; left:0; right:0; z-index:9999; border-bottom:2px solid #000;">
+    <h3 style="margin:0 0 10px 0;">📦 舊手機資料強制提取器</h3>
+    <textarea id="dataExport" style="width:100%; height:80px; font-size:12px;" placeholder="資料會顯示在這裡..."></textarea>
+    <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="fetchAllPossibleData()" style="flex:1; padding:10px; background:black; color:white; border:none; border-radius:5px;">1. 開始掃描並提取</button>
+        <button onclick="copyData()" style="flex:1; padding:10px; background:#007AFF; color:white; border:none; border-radius:5px;">2. 複製文字</button>
+    </div>
 </div>
 
 <script>
-function exportData() {
-    const data = localStorage.getItem('csmu_local_final'); // 這裡要換成妳之前儲存的 KEY
-    document.getElementById('dataExport').value = data;
+function fetchAllPossibleData() {
+    // 列出我們之前用過的所有可能 Key 值
+    const keys = [
+        'patient_local_data_v1', 
+        'csmu_local_v2', 
+        'csmu_local_v3', 
+        'csmu_local_final', 
+        'csmu_tube_v3',
+        'csmu_tube_tracker_v1'
+    ];
+    
+    let foundData = "";
+    keys.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val && val !== "[]") {
+            foundData += `--- 標籤: ${key} ---\n${val}\n\n`;
+        }
+    });
+
+    if (foundData === "") {
+        // 如果上面都沒中，就把整個 LocalStorage 倒出來（最後大絕招）
+        foundData = JSON.stringify(localStorage);
+    }
+
+    document.getElementById('dataExport').value = foundData;
+    alert("掃描完成！請檢查方框是否有文字。");
+}
+
+function copyData() {
+    const copyText = document.getElementById("dataExport");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    alert("已複製到剪貼簿！請透過 LINE 傳給自己。");
 }
 </script>
+
 
     <style>
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
