@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>臨床管路管理系統 (本機雙Logo版)</title>
     
+<div style="background:yellow; padding:20px; position:fixed; top:0; z-index:999; width:100%;">
+    <h3>資料提取器</h3>
+    <textarea id="dataExport" style="width:100%; height:100px;"></textarea>
+    <button onclick="exportData()">點我提取全部資料</button>
+</div>
+
+<script>
+function exportData() {
+    const data = localStorage.getItem('csmu_local_final'); // 這裡要換成妳之前儲存的 KEY
+    document.getElementById('dataExport').value = data;
+}
+</script>
 
     <style>
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
