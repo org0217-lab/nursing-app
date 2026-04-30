@@ -3,113 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>中山醫管路維護雲端版</title>
-
-
-<div style="background:#FFF9C4; padding:20px; border-bottom:3px solid #FBC02D; font-family:sans-serif;">
-    <h3 style="margin:0 0 10px 0; color:#F57F17;">✨ 舊資料自動修復搬家工具</h3>
-    <p style="font-size:14px; color:#333;">請直接貼上妳剛才那串文字（包含反斜線也沒關係）：</p>
-    <textarea id="importBox" style="width:100%; height:120px; border-radius:10px; border:1px solid #FBC02D; padding:10px;" placeholder="在此貼上內容..."></textarea>
-    
-    <button onclick="superCleanImport()" id="moveBtn" style="width:100%; padding:15px; background:#F57F17; color:white; border:none; margin-top:15px; border-radius:10px; font-weight:bold; font-size:16px;">
-        點我修復並開始搬家
-    </button>
-    <p id="msg" style="text-align:center; font-size:13px; color:#E65100; margin-top:10px;"></p>
-</div>
-
-<script>
-// ⚠️ 確保這裡是妳的 API 網址
-const API_URL = "https://sheetdb.io/api/v1/3rgwakwkhx1vz"; 
-
-async function superCleanImport() {
-    const btn = document.getElementById('moveBtn');
-    const msg = document.getElementById('msg');
-    let raw = document.getElementById('importBox').value;
-    
-    if(!raw) return alert("請貼上文字內容！");
-
-    btn.disabled = true;
-    btn.innerText = "正在修復格式...";
-
-    try {
-        // 1. 強力清洗：移除所有的反斜線，並修正被轉義的引號
-        let cleaned = raw.replace(/\\"/g, '"').replace(/\\/g, '');
-        
-        // 2. 尋找 JSON 方括號區塊
-        const jsonMatch = cleaned.match(/\[.*\]/s);
-        if(!jsonMatch) throw new Error("找不到有效的資料方括號 [ ]");
-        
-        const dataArray = JSON.parse(jsonMatch[0]);
-        
-        // 3. 開始同步
-        let count = 0;
-        for(let item of dataArray) {
-            // 重新整理資料格式，確保沒有多餘的空白
-            const finalData = {
-                id: Date.now().toString() + count,
-                name: item.name || "",
-                bed: item.bed || "",
-                type: item.type || "",
-                startdate: item.startdate || "",
-                date: item.date || "",
-                dr: item.dr || "",
-                diag: item.diag || "",
-                memo: item.memo || ""
-            };
-
-            await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: [finalData] })
-            });
-            count++;
-            msg.innerText = `成功修復並同步第 ${count} 筆資料...`;
-        }
-
-        alert(`太棒了！成功修復並搬移 ${count} 筆資料到雲端。`);
-        location.reload();
-    } catch(e) {
-        console.error(e);
-        alert("搬家還是失敗了！原因：" + e.message + "\n請確認貼上的文字最前面有 [ 最後面有 ]");
-        btn.disabled = false;
-        btn.innerText = "點我修復並開始搬家";
-    }
-}
-</script>
-
-
-
-    
+    <title>臨床管路管理系統</title>
     <style>
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; }
         .header { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .header img { height: 45px; width: 45px; object-fit: cover; border-radius: 10px; }
         .header h2 { margin: 0; font-size: 18px; flex-grow: 1; text-align: center; font-weight: 800; }
+        #loader { display: none; text-align: center; color: var(--primary); font-weight: bold; margin-bottom: 10px; padding: 10px; background: #E1F5FE; border-radius: 10px; }
         .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; cursor: pointer; }
         .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 8px solid var(--success); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
         .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; background: #E5E5EA; }
-        .tag-NG { background: #87CEEB; } .tag-Foley { background: #FFFF00; }
-        #loader { display: none; text-align: center; color: var(--primary); font-weight: bold; margin-bottom: 10px; }
-        /* 編輯視窗樣式略... (保持與之前一致) */
+        
+        /* 搬家工具樣式 */
+        .tools-box { background: #FFF9C4; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #FBC02D; }
+        
         #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 100; }
         .modal { background: white; width: 92%; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 10px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
-        .cancel { background: #E5E5EA; flex: 1; border: none; padding: 12px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header">
-            <img src="logo2.png" alt="Left Logo">
+            <img src="logo2.png" alt="Logo2">
             <h2>管路維護雲端版</h2>
-            <img src="logo.png" alt="Right Logo">
+            <img src="logo.png" alt="Logo">
         </div>
-        <div id="loader">⌛ 同步中...</div>
+
+        <div id="loader">⌛ 狀態：等待操作...</div>
+
+        <div class="tools-box">
+            <h4 style="margin:0 0 10px 0;">🚚 舊資料搬家工具</h4>
+            <textarea id="importBox" style="width:100%; height:60px;" placeholder="在此貼上舊手機複製的文字"></textarea>
+            <button onclick="superCleanImport()" style="width:100%; margin-top:10px; padding:10px; background:#F57F17; color:white; border:none; border-radius:8px;">執行搬家</button>
+        </div>
+        
         <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
         <div id="patientList"></div>
     </div>
@@ -134,34 +65,40 @@ async function superCleanImport() {
             <label>醫師</label><input type="text" id="eDr">
             <label>診斷</label><input type="text" id="eDiag">
             <label>備註</label><textarea id="eMemo"></textarea>
-            <div class="btn-group">
-                <button class="cancel" onclick="closeEditor()">取消</button>
-                <button class="save" onclick="save()">儲存同步</button>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="closeEditor()" style="flex:1; padding:12px; border-radius:10px; border:none; background:#E5E5EA;">取消</button>
+                <button onclick="save()" style="flex:2; padding:12px; border-radius:10px; border:none; background:var(--primary); color:white; font-weight:bold;">儲存同步</button>
             </div>
-            <button style="background:none; color:var(--danger); width:100%; margin-top:15px; border:none;" onclick="del()">⚠️ 刪除紀錄</button>
         </div>
     </div>
 
     <script>
-        // ⚠️ 這裡請換成妳在 SheetDB 申請的 API 網址
         const API_URL = "https://sheetdb.io/api/v1/3rgwakwkhx1vz"; 
         let pList = [];
 
+        // 讀取雲端
         async function fetchFromCloud() {
-            document.getElementById('loader').style.display = 'block';
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            loader.innerText = "⌛ 正在連線 Google Sheets...";
             try {
                 const res = await fetch(API_URL);
+                if(!res.ok) throw new Error("API連線失敗");
                 pList = await res.json();
                 render();
-            } catch (e) { alert("讀取雲端失敗"); }
-            document.getElementById('loader').style.display = 'none';
+                loader.innerText = "✅ 雲端同步成功";
+            } catch (e) { 
+                loader.innerText = "❌ 讀取失敗：請檢查試算表標題列";
+                console.error(e);
+            }
+            setTimeout(() => { if(loader.innerText.includes("成功")) loader.style.display = 'none'; }, 2000);
         }
 
         function render() {
             const container = document.getElementById('patientList');
             const now = new Date(); now.setHours(0,0,0,0);
             pList.sort((a, b) => new Date(a.date) - new Date(b.date));
-            container.innerHTML = pList.map(item => {
+            container.innerHTML = pList.length ? pList.map(item => {
                 let isUrgent = false;
                 if (item.date) {
                     const diff = Math.ceil((new Date(item.date) - now) / 86400000);
@@ -169,17 +106,52 @@ async function superCleanImport() {
                 }
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
-                        <b>${item.name} (${item.bed || '--'})</b><br>
-                        <span class="tube-tag tag-${item.type}">${item.type}</span><br>
+                        <b>${item.name || '未命名'} (${item.bed || '--'})</b><br>
+                        <span class="tube-tag">${item.type || '無管路'}</span><br>
                         <small>到期：${item.date || '--'}</small>
                     </div>`;
-            }).join('');
+            }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:30px;">雲端目前沒有資料</p>';
+        }
+
+        // 搬家修復功能
+        async function superCleanImport() {
+            let raw = document.getElementById('importBox').value;
+            if(!raw) return alert("請貼上文字");
+            try {
+                let cleaned = raw.replace(/\\"/g, '"').replace(/\\/g, '');
+                const jsonMatch = cleaned.match(/\[.*\]/s);
+                if(!jsonMatch) throw new Error("資料格式不對");
+                const dataArray = JSON.parse(jsonMatch[0]);
+                
+                document.getElementById('loader').style.display = 'block';
+                for(let item of dataArray) {
+                    const finalData = {
+                        id: Date.now().toString() + Math.random(),
+                        name: item.name || "未命名",
+                        bed: item.bed || "",
+                        type: item.type || "",
+                        startdate: item.startdate || "",
+                        date: item.date || "",
+                        dr: item.dr || "",
+                        diag: item.diag || "",
+                        memo: item.memo || ""
+                    };
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ data: [finalData] })
+                    });
+                }
+                alert("搬家完成！");
+                location.reload();
+            } catch(e) { alert("修復失敗：" + e.message); }
         }
 
         async function save() {
             const id = document.getElementById('eId').value || Date.now().toString();
             const data = {
-                id, name: document.getElementById('eName').value,
+                id,
+                name: document.getElementById('eName').value,
                 bed: document.getElementById('eBed').value,
                 type: document.getElementById('eType').value,
                 startdate: document.getElementById('eStartDate').value,
@@ -188,28 +160,23 @@ async function superCleanImport() {
                 diag: document.getElementById('eDiag').value,
                 memo: document.getElementById('eMemo').value
             };
-
             document.getElementById('loader').style.display = 'block';
-            // 如果是編輯，先刪除舊的
+            document.getElementById('loader').innerText = "⌛ 正在存儲到雲端...";
+            
             if (document.getElementById('eId').value) {
                 await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
             }
-            // 新增
-            await fetch(API_URL, {
+            const res = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: [data] })
             });
-            await fetchFromCloud();
-            closeEditor();
-        }
-
-        async function del() {
-            const id = document.getElementById('eId').value;
-            if (id && confirm("確定刪除雲端資料？")) {
-                await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
+            
+            if(res.ok) {
                 await fetchFromCloud();
                 closeEditor();
+            } else {
+                alert("儲存失敗，請檢查網路或試算表格式");
             }
         }
 
@@ -229,9 +196,14 @@ async function superCleanImport() {
             } else {
                 document.getElementById('eId').value = "";
                 document.getElementById('eName').value = "";
+                document.getElementById('eBed').value = "";
+                document.getElementById('eDr').value = "";
+                document.getElementById('eDiag').value = "";
+                document.getElementById('eMemo').value = "";
             }
         }
         function closeEditor() { document.getElementById('editor').style.display = 'none'; }
+        
         fetchFromCloud();
     </script>
 </body>
