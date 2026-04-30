@@ -5,34 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>中山醫管路維護雲端版</title>
 
-<div style="background:#E1F5FE; padding:15px; border-bottom:2px solid #01579B;">
-    <h3 style="margin:0;">🚚 舊資料搬家工具 (新手機用)</h3>
-    <p style="font-size:12px; margin:5px 0;">請在此貼上從舊手機複製的文字：</p>
-    <textarea id="importBox" style="width:100%; height:80px;"></textarea>
-    <button onclick="importToCloud()" style="width:100%; padding:10px; background:#0288D1; color:white; border:none; margin-top:10px; border-radius:5px;">點我同步到雲端</button>
+
+<div style="background:#E1F5FE; padding:20px; border-bottom:3px solid #0288D1; font-family:sans-serif;">
+    <h3 style="margin:0 0 10px 0; color:#01579B;">🚚 舊資料自動搬家工具</h3>
+    <p style="font-size:14px; color:#333;">請直接貼上「舊手機複製的所有文字」：</p>
+    <textarea id="importBox" style="width:100%; height:120px; border-radius:10px; border:1px solid #B3E5FC; padding:10px;" placeholder="在此貼上內容..."></textarea>
+    
+    <button onclick="smartImport()" id="moveBtn" style="width:100%; padding:15px; background:#0288D1; color:white; border:none; margin-top:15px; border-radius:10px; font-weight:bold; font-size:16px;">
+        點我開始搬家
+    </button>
+    <p id="msg" style="text-align:center; font-size:13px; color:#d32f2f; margin-top:10px;"></p>
 </div>
 
 <script>
-async function importToCloud() {
-    const rawData = document.getElementById('importBox').value;
-    if(!rawData) return alert("請貼上資料！");
+// ⚠️ 這裡一定要確認有填入妳的 SheetDB API 網址
+const API_URL = "妳的SheetDB網址"; 
+
+async function smartImport() {
+    const btn = document.getElementById('moveBtn');
+    const msg = document.getElementById('msg');
+    let raw = document.getElementById('importBox').value;
     
+    if(!raw) return alert("請貼上文字內容！");
+
+    btn.disabled = true;
+    btn.innerText = "處理中，請稍候...";
+    msg.innerText = "正在清理格式並同步雲端...";
+
     try {
-        // 解析舊資料
-        const cleanData = JSON.parse(rawData.split('\n')[1]); // 這裡會過濾掉提取器的標籤文字
+        // 第一步：自動尋找方括號 [ ] 之間的內容 (這是真正的資料區塊)
+        const jsonMatch = raw.match(/\[.*\]/s);
+        if(!jsonMatch) throw new Error("找不到有效的資料格式");
         
-        // 逐筆傳送到雲端 (SheetDB)
+        const cleanData = JSON.parse(jsonMatch[0]);
+        
+        // 第二步：逐筆傳送到雲端
+        let count = 0;
         for(let item of cleanData) {
+            // 移除舊的 ID 以免衝突，重新生成
+            item.id = Date.now().toString() + count; 
+            
             await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: [item] })
             });
+            count++;
+            msg.innerText = `已完成同步第 ${count} 筆資料...`;
         }
-        alert("搬家完成！請重新整理網頁。");
-        location.reload();
+
+        alert(`成功搬移 ${count} 筆病患資料到雲端！`);
+        location.reload(); // 重新整理網頁看結果
     } catch(e) {
-        alert("格式錯誤，請確保貼上的是完整的提取文字。");
+        console.error(e);
+        alert("搬家失敗！原因：" + e.message + "\n請確認貼上的文字包含 [ 開頭與 ] 結尾。");
+        btn.disabled = false;
+        btn.innerText = "點我開始搬家";
     }
 }
 </script>
