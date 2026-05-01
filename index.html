@@ -8,42 +8,68 @@
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; --csmu-red: #8B0000; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
         
-        /* 雙貓 Logo 標題 */
+        /* 中山醫開場特效 */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10000;
+            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.5s;
+        }
+        .splash-logo { width: 100px; height: 100px; margin-bottom: 20px; animation: logo-entrance 1.2s ease-out forwards; opacity: 0; }
+        .splash-text { color: var(--csmu-red); font-size: 22px; font-weight: 900; opacity: 0; animation: text-fadein 1s ease-out 0.5s forwards; }
+        @keyframes logo-entrance { 0% { transform: scale(0.5); opacity: 0; filter: blur(10px); } 100% { transform: scale(1); opacity: 1; filter: blur(0); } }
+        @keyframes text-fadein { 0% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        .splash-hidden { transform: translateY(-100%) !important; opacity: 0; pointer-events: none; }
+
+        /* 主標題區塊 */
         .header { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .header img { height: 50px; width: 50px; object-fit: cover; border-radius: 12px; }
         .header h2 { margin: 0; font-size: 18px; color: var(--csmu-red); flex-grow: 1; text-align: center; font-weight: 800; line-height: 1.2; }
         .header h2 small { display: block; font-size: 13px; color: #8E8E93; font-weight: bold; margin-top: 2px; }
 
-        /* 使用者代號顯示區 */
         .user-info { text-align: center; font-size: 12px; color: #8E8E93; margin-bottom: 15px; }
         .user-info span { color: var(--primary); font-weight: bold; text-decoration: underline; cursor: pointer; padding: 5px; }
 
-        /* 自訂對話框 (解決紅色框框網址問題) */
-        #userModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 20000; }
-        .user-modal-content { background: white; width: 85%; max-width: 350px; padding: 25px; border-radius: 20px; box-sizing: border-box; text-align: center; }
-        .user-modal-content h3 { margin: 0 0 10px 0; color: #1C1C1E; font-size: 18px; }
-        .user-modal-content p { color: #8E8E93; font-size: 14px; margin-bottom: 20px; }
-        .user-modal-content input { width: 100%; padding: 12px; border: 1px solid #D1D1D6; border-radius: 10px; font-size: 18px; text-align: center; margin-bottom: 20px; box-sizing: border-box; }
-
-        /* 原有樣式保持 */
         #loader { display: none; text-align: center; color: var(--primary); font-size: 13px; font-weight: bold; margin-bottom: 10px; }
         .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; cursor: pointer; }
+        
+        /* --- 修復後的病患卡片排版 --- */
         .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 8px solid var(--success); box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
         .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
-        .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 8px; font-size: 13px; }
-        .date-label { color: #8E8E93; }
-        .date-value { color: #3A3A3C; font-weight: bold; }
-        .status-badge { position: absolute; top: 15px; right: 15px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; font-weight: bold; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .patient-info b { font-size: 18px; color: #1C1C1E; }
+        .tube-tag { background:#E5E5EA; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:bold; margin-left:8px; display:inline-block; vertical-align: middle; }
+        
+        .status-badge { font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; font-weight: bold; }
+        .urgent .status-badge { background: var(--danger); color: white; }
+
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin-top: 10px; border-top: 1px solid #F2F2F7; padding-top: 10px; }
+        .date-row { display: flex; align-items: center; font-size: 13px; }
+        .date-label { color: #8E8E93; margin-right: 8px; white-space: nowrap; }
+        .date-value { color: #3A3A3C; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* 自訂使用者視窗 */
+        #userModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 20000; }
+        .user-modal-content { background: white; width: 85%; max-width: 350px; padding: 25px; border-radius: 20px; text-align: center; }
+        .user-modal-content input { width: 100%; padding: 12px; border: 1px solid #D1D1D6; border-radius: 10px; font-size: 18px; text-align: center; margin: 20px 0; box-sizing: border-box; }
 
         /* 編輯視窗 */
         #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 10000; }
         .modal { background: white; width: 92%; max-width: 450px; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+        label { display: block; margin-top: 12px; font-size: 13px; color: #8E8E93; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
         .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
         .cancel { background: #E5E5EA; flex: 1; border: none; padding: 12px; border-radius: 10px; }
     </style>
 </head>
 <body>
+
+    <div id="splash-screen">
+        <img src="https://upload.wikimedia.org/wikipedia/zh/thumb/e/ee/Chung_Shan_Medical_University_seal.svg/1280px-Chung_Shan_Medical_University_seal.svg.png" class="splash-logo">
+        <div class="splash-text">臨床管理系統</div>
+        <div style="color: #8E8E93; margin-top: 5px; font-weight: bold;">by-fish</div>
+    </div>
 
     <div class="container">
         <div class="header">
@@ -61,8 +87,8 @@
 
     <div id="userModal">
         <div class="user-modal-content">
-            <h3 style="color:var(--csmu-red)">臨床管理系統 by-fish</h3>
-            <p>請輸入您的使用者代號：</p>
+            <h3 style="color:var(--csmu-red);margin:0;">臨床管理系統 by-fish</h3>
+            <p style="color:#8E8E93;font-size:14px;margin-top:10px;">請輸入您的使用者代號：</p>
             <input type="text" id="userInputField" placeholder="例如：nurse01">
             <div class="btn-group">
                 <button class="cancel" onclick="document.getElementById('userModal').style.display='none'">取消</button>
@@ -75,23 +101,23 @@
         <div class="modal">
             <h3 id="mTitle" style="margin:0">編輯資料</h3>
             <input type="hidden" id="eId">
-            <label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">病患姓名</label><input type="text" id="eName" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;">
-            <label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">床號</label><input type="text" id="eBed" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;">
-            <label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">管路類型</label>
-            <select id="eType" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;">
+            <label>病患姓名</label><input type="text" id="eName">
+            <label>床號</label><input type="text" id="eBed">
+            <label>管路類型</label>
+            <select id="eType">
                 <option value="NG">NG</option><option value="Foley">Foley</option>
                 <option value="PCND">PCND</option><option value="Tr">Tr</option>
                 <option value="Port-A">Port-A</option><option value="PICC">PICC</option>
                 <option value="Pigtail">Pigtail</option><option value="PTCD">PTCD</option>
             </select>
             <div style="display:flex; gap:10px">
-                <div style="flex:1"><label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">置放日期</label><input type="date" id="eStartDate" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;"></div>
-                <div style="flex:1"><label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">到期日期</label><input type="date" id="eDate" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;"></div>
+                <div style="flex:1"><label>置放日期</label><input type="date" id="eStartDate"></div>
+                <div style="flex:1"><label>到期日期</label><input type="date" id="eDate"></div>
             </div>
-            <label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">主治醫師</label><input type="text" id="eDr" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;">
-            <label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">診斷項目</label><input type="text" id="eDiag" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;">
-            <label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">身份</label><input type="text" id="eStatus" style="width:100%;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;">
-            <label style="display:block;margin-top:10px;font-size:12px;color:#8E8E93;">備註事項</label><textarea id="eMemo" style="width:100%;height:60px;padding:10px;border:1px solid #DDD;border-radius:8px;margin-top:5px;box-sizing:border-box;"></textarea>
+            <label>主治醫師</label><input type="text" id="eDr">
+            <label>診斷項目</label><input type="text" id="eDiag">
+            <label>身份</label><input type="text" id="eStatus">
+            <label>備註事項</label><textarea id="eMemo" style="height:60px"></textarea>
             <div class="btn-group">
                 <button class="cancel" onclick="closeEditor()">取消</button>
                 <button class="save" onclick="save()">儲存同步</button>
@@ -105,33 +131,23 @@
         let pList = [];
         let myID = localStorage.getItem('csmu_user_id');
 
-        // 初始化檢查
         window.onload = function() {
-            if (!myID) {
-                showUserModal();
-            } else {
-                document.getElementById('displayUser').innerText = myID;
-                fetchFromCloud();
-            }
+            if (!myID) showUserModal();
+            else { document.getElementById('displayUser').innerText = myID; fetchFromCloud(); }
         };
 
-        // 顯示自訂視窗 (取代 prompt)
         function showUserModal() {
             document.getElementById('userModal').style.display = 'flex';
             document.getElementById('userInputField').value = myID || "";
         }
 
-        // 確定更換代號
         function confirmUser() {
             const val = document.getElementById('userInputField').value.trim();
             if (val) {
-                myID = val;
-                localStorage.setItem('csmu_user_id', myID);
+                myID = val; localStorage.setItem('csmu_user_id', myID);
                 document.getElementById('displayUser').innerText = myID;
                 document.getElementById('userModal').style.display = 'none';
                 fetchFromCloud();
-            } else {
-                alert("請輸入代號！");
             }
         }
 
@@ -139,8 +155,7 @@
             document.getElementById('loader').style.display = 'block';
             try {
                 const res = await fetch(`${API_URL}/search?owner=${myID}`);
-                pList = await res.json();
-                render();
+                pList = await res.json(); render();
             } catch (e) { console.error("同步失敗"); }
             document.getElementById('loader').style.display = 'none';
         }
@@ -157,8 +172,8 @@
                 }
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                            <div class="info"><b>${item.name || '未命名'} (${item.bed || '--'})</b><span style="background:#E5E5EA; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:bold; margin-top:5px; display:inline-block;">${item.type}</span></div>
+                        <div class="item-header">
+                            <div class="patient-info"><b>${item.name || '未命名'} (${item.bed || '--'})</b><span class="tube-tag">${item.type}</span></div>
                             <div class="status-badge">${statusLabel}</div>
                         </div>
                         <div class="date-grid">
@@ -204,6 +219,7 @@
             } else { fields.forEach(f => document.getElementById(f).value = ""); }
         }
         function closeEditor() { document.getElementById('editor').style.display = 'none'; }
+        window.addEventListener('load', () => { setTimeout(() => document.getElementById('splash-screen').classList.add('splash-hidden'), 2200); });
     </script>
 </body>
 </html>
