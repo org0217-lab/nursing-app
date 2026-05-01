@@ -8,92 +8,66 @@
         :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; --csmu-red: #8B0000; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
         
-        /* --- 中山醫開場特效樣式 --- */
+        /* 中山醫開場特效 */
         #splash-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10000;
             transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.5s;
         }
-        .splash-logo {
-            width: 120px;
-            height: 120px;
-            margin-bottom: 20px;
-            animation: logo-entrance 1.2s ease-out forwards;
-            opacity: 0;
-        }
-        .splash-text {
-            color: var(--csmu-red);
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            opacity: 0;
-            animation: text-fadein 1s ease-out 0.5s forwards;
-        }
-        .splash-sub {
-            color: #8E8E93;
-            font-size: 14px;
-            margin-top: 10px;
-            opacity: 0;
-            animation: text-fadein 1s ease-out 0.8s forwards;
-        }
-        @keyframes logo-entrance {
-            0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
-            100% { transform: scale(1); opacity: 1; filter: blur(0); }
-        }
-        @keyframes text-fadein {
-            0% { transform: translateY(10px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        /* 特效結束後的類別 */
+        .splash-logo { width: 120px; height: 120px; margin-bottom: 20px; animation: logo-entrance 1.2s ease-out forwards; opacity: 0; }
+        .splash-text { color: var(--csmu-red); font-size: 24px; font-weight: 900; opacity: 0; animation: text-fadein 1s ease-out 0.5s forwards; }
+        @keyframes logo-entrance { 0% { transform: scale(0.5); opacity: 0; filter: blur(10px); } 100% { transform: scale(1); opacity: 1; filter: blur(0); } }
+        @keyframes text-fadein { 0% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
         .splash-hidden { transform: translateY(-100%) !important; opacity: 0; pointer-events: none; }
 
-        /* --- 原有樣式保持不變 --- */
+        /* 主介面樣式 */
         .header { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .header img { height: 50px; width: 50px; object-fit: cover; border-radius: 12px; }
         .header h2 { margin: 0; font-size: 18px; color: #1C1C1E; flex-grow: 1; text-align: center; font-weight: 800; line-height: 1.2; }
+        
+        .user-info { text-align: center; font-size: 12px; color: #8E8E93; margin-bottom: 10px; }
+        .user-info span { color: var(--primary); font-weight: bold; text-decoration: underline; cursor: pointer; }
+
         #loader { display: none; text-align: center; color: var(--primary); font-size: 13px; font-weight: bold; margin-bottom: 10px; }
-        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,122,255,0.2); cursor: pointer; }
+        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; cursor: pointer; }
+        
         .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; flex-direction: column; border-left: 8px solid var(--success); box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; position: relative; }
         .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .info b { font-size: 19px; color: #1C1C1E; display: block; }
-        .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin-top: 8px; }
+        .date-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 8px; }
         .date-row { display: contents; font-size: 13px; }
-        .date-label { color: #8E8E93; font-weight: 500; min-width: 40px; }
-        .date-value { font-family: sans-serif; color: #3A3A3C; font-weight: bold; word-break: break-all; }
-        .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; background: #E5E5EA; color: #3A3A3C; }
-        .status-badge { position: absolute; top: 15px; right: 15px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; color: #3A3A3C; font-weight: bold; }
+        .date-label { color: #8E8E93; min-width: 40px; }
+        .date-value { color: #3A3A3C; font-weight: bold; }
+        .tube-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #E5E5EA; margin-top: 5px; }
+        .status-badge { position: absolute; top: 15px; right: 15px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; font-weight: bold; }
         .urgent .status-badge { background: var(--danger); color: white; }
+
+        /* 彈出視窗 */
         #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 100; }
         .modal { background: white; width: 92%; max-width: 450px; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
         label { display: block; margin-top: 12px; font-size: 13px; color: #8E8E93; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 10px; box-sizing: border-box; font-size: 16px; background: #F9F9F9; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 16px; }
-        .cancel { background: #E5E5EA; color: #333; flex: 1; border: none; padding: 12px; border-radius: 10px; font-size: 16px; }
+        .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
+        .cancel { background: #E5E5EA; flex: 1; border: none; padding: 12px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="splash-screen">
-        <img src="https://upload.wikimedia.org/wikipedia/zh/thumb/e/ee/Chung_Shan_Medical_University_seal.svg/1280px-Chung_Shan_Medical_University_seal.svg.png" class="splash-logo" alt="CSMU Logo">
+        <img src="https://upload.wikimedia.org/wikipedia/zh/thumb/e/ee/Chung_Shan_Medical_University_seal.svg/1280px-Chung_Shan_Medical_University_seal.svg.png" class="splash-logo">
         <div class="splash-text">中山醫學大學</div>
-        <div class="splash-sub">臨床管路管理系統 v2.0</div>
     </div>
 
     <div class="container">
         <div class="header">
-            <img src="logo.png" alt="Cat Left">
+            <img src="logo.png" alt="Left">
             <h2>臨床管路<br>追蹤管理系統</h2>
-            <img src="logo.png" alt="Cat Right">
+            <img src="logo.png" alt="Right">
         </div>
         
+        <div class="user-info">目前使用者代號：<span onclick="resetUser()" id="displayUser">載入中...</span></div>
         <div id="loader">⌛ 同步雲端資料中...</div>
         
         <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
@@ -119,7 +93,7 @@
             </div>
             <label>主治醫師</label><input type="text" id="eDr">
             <label>診斷項目</label><input type="text" id="eDiag">
-            <label>身份 (例如：健保、自費)</label><input type="text" id="eStatus">
+            <label>身份</label><input type="text" id="eStatus">
             <label>備註事項</label><textarea id="eMemo" style="height:60px"></textarea>
             <div class="btn-group">
                 <button class="cancel" onclick="closeEditor()">取消</button>
@@ -132,18 +106,31 @@
     <script>
         const API_URL = "https://sheetdb.io/api/v1/3rgwakwkhx1vz"; 
         let pList = [];
+        let myID = localStorage.getItem('csmu_user_id');
 
-        // 控制特效何時消失
+        // 多用戶初始化
+        if (!myID) {
+            myID = prompt("請輸入您的專屬代號（將用來區隔您的資料）：");
+            if (!myID) myID = "Guest";
+            localStorage.setItem('csmu_user_id', myID);
+        }
+        document.getElementById('displayUser').innerText = myID;
+
+        function resetUser() {
+            const newID = prompt("更換使用者代號：", myID);
+            if (newID) { localStorage.setItem('csmu_user_id', newID); location.reload(); }
+        }
+
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('splash-screen').classList.add('splash-hidden');
-            }, 2500); // 2.5秒後動畫結束並向上滑開
+            setTimeout(() => document.getElementById('splash-screen').classList.add('splash-hidden'), 2200);
+            fetchFromCloud();
         });
 
         async function fetchFromCloud() {
             document.getElementById('loader').style.display = 'block';
             try {
-                const res = await fetch(API_URL);
+                // 核心：只抓取屬於自己的資料
+                const res = await fetch(`${API_URL}/search?owner=${myID}`);
                 pList = await res.json();
                 render();
             } catch (e) { console.error("同步失敗"); }
@@ -153,10 +140,7 @@
         function render() {
             const container = document.getElementById('patientList');
             const now = new Date(); now.setHours(0,0,0,0);
-            pList.sort((a, b) => {
-                if (!a.date) return 1; if (!b.date) return -1;
-                return new Date(a.date) - new Date(b.date);
-            });
+            pList.sort((a, b) => (new Date(a.date) - new Date(b.date)));
             container.innerHTML = pList.length ? pList.map(item => {
                 let isUrgent = false; let statusLabel = '追蹤中';
                 if (item.date) {
@@ -165,50 +149,39 @@
                 }
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
-                        <div class="card-top">
-                            <div class="info">
-                                <b>${item.name || '未命名'} (${item.bed || '--'})</b>
-                                <span class="tube-tag">${item.type || '無'}</span>
-                            </div>
-                            <div class="status-badge">${statusLabel}</div>
-                        </div>
+                        <div class="info"><b>${item.name || '未命名'} (${item.bed || '--'})</b><span class="tube-tag">${item.type}</span></div>
+                        <div class="status-badge">${statusLabel}</div>
                         <div class="date-grid">
-                            <div class="date-row"><span class="date-label">置放</span><span class="date-value">${item.startdate || '--'}</span></div>
                             <div class="date-row"><span class="date-label">到期</span><span class="date-value">${item.date || '--'}</span></div>
                             <div class="date-row"><span class="date-label">醫生</span><span class="date-value">${item.dr || '--'}</span></div>
                             <div class="date-row"><span class="date-label">診斷</span><span class="date-value">${item.diag || '--'}</span></div>
                             <div class="date-row"><span class="date-label">身份</span><span class="date-value">${item.status || '--'}</span></div>
                         </div>
                     </div>`;
-            }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前雲端無資料</p>';
+            }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前您的清單無資料</p>';
         }
 
         async function save() {
             const id = document.getElementById('eId').value || Date.now().toString();
             const data = {
-                id, name: document.getElementById('eName').value,
-                bed: document.getElementById('eBed').value, dr: document.getElementById('eDr').value,
-                diag: document.getElementById('eDiag').value, status: document.getElementById('eStatus').value,
-                type: document.getElementById('eType').value,
+                id, name: document.getElementById('eName').value, bed: document.getElementById('eBed').value,
+                dr: document.getElementById('eDr').value, diag: document.getElementById('eDiag').value,
+                status: document.getElementById('eStatus').value, type: document.getElementById('eType').value,
                 startdate: document.getElementById('eStartDate').value, date: document.getElementById('eDate').value,
-                memo: document.getElementById('eMemo').value
+                memo: document.getElementById('eMemo').value, owner: myID // 核心標記
             };
             document.getElementById('loader').style.display = 'block';
-            if (document.getElementById('eId').value) {
-                await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
-            }
+            if (document.getElementById('eId').value) await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
             await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [data] }) });
-            await fetchFromCloud();
-            closeEditor();
+            fetchFromCloud(); closeEditor();
         }
 
         async function del() {
             const id = document.getElementById('eId').value;
-            if (id && confirm("確定要從雲端刪除嗎？")) {
+            if (id && confirm("確定要刪除嗎？")) {
                 document.getElementById('loader').style.display = 'block';
                 await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
-                await fetchFromCloud();
-                closeEditor();
+                fetchFromCloud(); closeEditor();
             }
         }
 
@@ -217,18 +190,10 @@
             const fields = ['eId','eName','eBed','eDr','eDiag','eStatus','eType','eStartDate','eDate','eMemo'];
             if (id) {
                 const cur = pList.find(i => i.id == id);
-                document.getElementById('mTitle').innerText = "修改資料";
-                fields.forEach(f => { 
-                    const key = f.replace('e', '').toLowerCase(); 
-                    document.getElementById(f).value = cur[key] || ""; 
-                });
-            } else {
-                document.getElementById('mTitle').innerText = "新增資料";
-                fields.forEach(f => document.getElementById(f).value = "");
-            }
+                fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
+            } else { fields.forEach(f => document.getElementById(f).value = ""); }
         }
         function closeEditor() { document.getElementById('editor').style.display = 'none'; }
-        fetchFromCloud();
     </script>
 </body>
 </html>
