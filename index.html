@@ -15,25 +15,25 @@
         .splash-hidden { transform: translateY(-100%); pointer-events: none; }
         @keyframes logo-entrance { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* 標題區域優化 */
+        /* 標題區域 */
         .header { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: white; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .header img { height: 48px; width: 48px; object-fit: cover; border-radius: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header img { height: 48px; width: 48px; object-fit: cover; border-radius: 14px; }
         .header h2 { margin: 0; font-size: 19px; color: var(--csmu-red); flex-grow: 1; text-align: center; font-weight: 800; }
         .header h2 small { display: block; font-size: 11px; color: #AEAEB2; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
 
         .user-info { text-align: center; font-size: 12px; color: #8E8E93; margin-bottom: 15px; background: rgba(0,122,255,0.05); padding: 6px; border-radius: 10px; }
-        .user-info span { color: var(--primary); font-weight: 600; text-decoration: none; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--primary); margin-left: 5px; }
+        .user-info span { color: var(--primary); font-weight: 600; text-decoration: underline; cursor: pointer; margin-left: 5px; }
 
-        .add-btn { width: 100%; background: linear-gradient(135deg, #007AFF, #0056B3); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,122,255,0.3); transition: transform 0.2s; }
+        .add-btn { width: 100%; background: linear-gradient(135deg, #007AFF, #0056B3); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,122,255,0.3); }
         
-        /* 卡片設計更新 */
-        .patient-item { background: white; padding: 18px; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid var(--success); box-shadow: 0 2px 8px rgba(0,0,0,0.03); position: relative; border-bottom: 2px solid rgba(0,0,0,0.02); }
+        /* 卡片設計 */
+        .patient-item { background: white; padding: 18px; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid var(--success); box-shadow: 0 2px 8px rgba(0,0,0,0.03); position: relative; }
         .patient-item.urgent { border-left-color: var(--danger); background: #FFF9F9; }
         
-        /* Key-in Date 樣式 */
-        .key-in-tag { font-size: 10px; color: #AEAEB2; font-weight: 600; margin-bottom: 4px; display: block; text-transform: uppercase; }
+        /* 資料建立日期改為中文顯示 */
+        .key-in-tag { font-size: 11px; color: #AEAEB2; font-weight: 600; margin-bottom: 6px; display: block; border-bottom: 1px solid #F2F2F7; padding-bottom: 4px; }
 
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; padding-top: 4px; }
         .patient-info b { font-size: 20px; color: #000; letter-spacing: -0.5px; }
         .tube-tag { background: #F2F2F7; color: #3A3A3C; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
         
@@ -45,7 +45,6 @@
         .date-label { color: #8E8E93; font-size: 11px; margin-bottom: 2px; font-weight: 500; }
         .date-value { color: #3A3A3C; font-size: 14px; font-weight: 600; }
 
-        /* 視窗與輸入優化 */
         #userModal, #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 20000; }
         .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         input, select, textarea { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #E5E5EA; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #F9F9F9; }
@@ -70,7 +69,7 @@
         </div>
         
         <div class="user-info">護理小隊員：<span onclick="showUserModal()" id="displayUser">...</span></div>
-        <div id="loader" style="color:#8E8E93;">🔄 雲端同步中...</div>
+        <div id="loader" style="color:#8E8E93; text-align:center;">🔄 雲端同步中...</div>
         
         <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
         <div id="patientList"></div>
@@ -97,24 +96,10 @@
             <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:15px;">病患姓名</label><input type="text" id="eName" placeholder="全名">
             <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">床號</label><input type="text" id="eBed" placeholder="例如: 502-1">
             <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">管路類型</label>
-            <select id="eType">
-                <option value="NG">NG</option><option value="Foley">Foley</option>
-                <option value="PCND">PCND</option><option value="Tr">Tr</option>
-                <option value="Port-A">Port-A</option><option value="PICC">PICC</option>
-                <option value="Pigtail">Pigtail</option><option value="PTCD">PTCD</option>
-            </select>
-            <div style="display:flex; gap:10px">
-                <div style="flex:1"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">置放日</label><input type="date" id="eStartDate"></div>
-                <div style="flex:1"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">到期日</label><input type="date" id="eDate"></div>
-            </div>
-            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">主治醫師</label><input type="text" id="eDr">
-            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">診斷項目</label><input type="text" id="eDiag">
-            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">身份</label><input type="text" id="eStatus">
-            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">備註</label><textarea id="eMemo" style="height:80px"></textarea>
-            <div class="btn-group">
-                <button class="cancel" onclick="closeEditor()">取消</button>
-                <button class="save" onclick="save()">儲存同步</button>
-            </div>
+            <select id="eType"><option value="NG">NG</option><option value="Foley">Foley</option><option value="PCND">PCND</option><option value="Tr">Tr</option><option value="Port-A">Port-A</option><option value="PICC">PICC</option><option value="Pigtail">Pigtail</option><option value="PTCD">PTCD</option></select>
+            <div style="display:flex; gap:10px"><div style="flex:1"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">置放日</label><input type="date" id="eStartDate"></div><div style="flex:1"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">到期日</label><input type="date" id="eDate"></div></div>
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">主治醫師</label><input type="text" id="eDr"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">診斷項目</label><input type="text" id="eDiag"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">身份</label><input type="text" id="eStatus"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">備註</label><textarea id="eMemo" style="height:80px"></textarea>
+            <div class="btn-group"><button class="cancel" onclick="closeEditor()">取消</button><button class="save" onclick="save()">儲存同步</button></div>
             <button style="background:none; color:var(--danger); width:100%; margin-top:20px; border:none; font-size:13px; font-weight:bold;" onclick="del()">⚠️ 刪除此紀錄</button>
         </div>
     </div>
@@ -157,15 +142,22 @@
             const container = document.getElementById('patientList');
             const now = new Date(); now.setHours(0,0,0,0);
             pList.sort((a, b) => (new Date(a.date) - new Date(b.date)));
+            
             container.innerHTML = pList.length ? pList.map(item => {
                 let isUrgent = false; let statusLabel = '追蹤中';
                 if (item.date) {
                     const diffDays = Math.ceil((new Date(item.date) - now) / 86400000);
                     if (diffDays <= 7) { isUrgent = true; statusLabel = diffDays < 0 ? '⚠️ 已逾期' : `⚠️ ${diffDays}天內`; }
                 }
+                
+                // 只有當 keyindate 存在時才顯示中文標籤
+                const keyInHtml = (item.keyindate && item.keyindate !== "" && item.keyindate !== "--") 
+                    ? `<span class="key-in-tag">📅 資料建立日期：${item.keyindate}</span>` 
+                    : '';
+
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
-                        <span class="key-in-tag">KEY-IN: ${item.keyindate || '--'}</span>
+                        ${keyInHtml}
                         <div class="item-header">
                             <div class="patient-info"><b>${item.name || '未命名'}</b><span class="tube-tag">${item.type}</span><div style="font-size:13px;color:#8E8E93;margin-top:2px;">床號：${item.bed || '--'}</div></div>
                             <div class="status-badge">${statusLabel}</div>
@@ -181,12 +173,16 @@
         }
 
         async function save() {
-            const id = document.getElementById('eId').value || Date.now().toString();
+            const eIdVal = document.getElementById('eId').value;
+            const id = eIdVal || Date.now().toString();
             
-            // 如果是新資料，自動抓取今天的日期
             let keyDate = document.getElementById('eKeyInDate').value;
-            if(!document.getElementById('eId').value) {
-                keyDate = new Date().toISOString().split('T')[0];
+            if(!eIdVal) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                keyDate = `${yyyy}-${mm}-${dd}`;
             }
 
             const data = {
@@ -195,12 +191,11 @@
                 status: document.getElementById('eStatus').value, type: document.getElementById('eType').value,
                 startdate: document.getElementById('eStartDate').value, date: document.getElementById('eDate').value,
                 memo: document.getElementById('eMemo').value, 
-                owner: myID,
-                keyindate: keyDate // 存入建立日期
+                owner: myID, keyindate: keyDate
             };
 
             document.getElementById('loader').style.display = 'block';
-            if (document.getElementById('eId').value) await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
+            if (eIdVal) await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
             await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [data] }) });
             fetchFromCloud(); closeEditor();
         }
@@ -220,10 +215,7 @@
             if (id) {
                 const cur = pList.find(i => i.id == id);
                 document.getElementById('mTitle').innerText = "修改病患資料";
-                fields.forEach(f => { 
-                    const key = f.replace('e', '').toLowerCase(); 
-                    document.getElementById(f).value = cur[key] || ""; 
-                });
+                fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
             } else { 
                 document.getElementById('mTitle').innerText = "新增病患個資";
                 fields.forEach(f => document.getElementById(f).value = ""); 
