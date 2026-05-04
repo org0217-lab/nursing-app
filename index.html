@@ -25,17 +25,19 @@
         .user-info span { color: var(--primary); font-weight: 600; text-decoration: none; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--primary); margin-left: 5px; }
 
         .add-btn { width: 100%; background: linear-gradient(135deg, #007AFF, #0056B3); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,122,255,0.3); transition: transform 0.2s; }
-        .add-btn:active { transform: scale(0.98); }
         
-        /* 卡片細節升級 */
-        .patient-item { background: white; padding: 18px; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid var(--success); box-shadow: 0 2px 8px rgba(0,0,0,0.03); position: relative; border-right: 1px solid rgba(0,0,0,0.02); border-bottom: 2px solid rgba(0,0,0,0.02); }
+        /* 卡片設計更新 */
+        .patient-item { background: white; padding: 18px; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid var(--success); box-shadow: 0 2px 8px rgba(0,0,0,0.03); position: relative; border-bottom: 2px solid rgba(0,0,0,0.02); }
         .patient-item.urgent { border-left-color: var(--danger); background: #FFF9F9; }
         
+        /* Key-in Date 樣式 */
+        .key-in-tag { font-size: 10px; color: #AEAEB2; font-weight: 600; margin-bottom: 4px; display: block; text-transform: uppercase; }
+
         .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .patient-info b { font-size: 20px; color: #000; letter-spacing: -0.5px; }
         .tube-tag { background: #F2F2F7; color: #3A3A3C; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
         
-        .status-badge { font-size: 11px; padding: 5px 10px; border-radius: 8px; background: #E5E5EA; color: #3A3A3C; font-weight: 800; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+        .status-badge { font-size: 11px; padding: 5px 10px; border-radius: 8px; background: #E5E5EA; color: #3A3A3C; font-weight: 800; }
         .urgent .status-badge { background: var(--danger); color: white; }
 
         .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 15px; margin-top: 12px; border-top: 1px solid #F2F2F7; padding-top: 12px; }
@@ -46,11 +48,10 @@
         /* 視窗與輸入優化 */
         #userModal, #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 20000; }
         .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        input, select, textarea { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #E5E5EA; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #F9F9F9; transition: border-color 0.2s; }
-        input:focus { border-color: var(--primary); outline: none; background: white; }
+        input, select, textarea { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #E5E5EA; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #F9F9F9; }
         .btn-group { display: flex; gap: 12px; margin-top: 25px; }
         .save { background: var(--primary); color: white; flex: 2; border: none; padding: 14px; border-radius: 12px; font-weight: bold; }
-        .cancel { background: #E5E5EA; color: #3A3A3C; flex: 1; border: none; padding: 14px; border-radius: 12px; font-weight: 600; }
+        .cancel { background: #E5E5EA; color: #3A3A3C; flex: 1; border: none; padding: 14px; border-radius: 12px; }
     </style>
 </head>
 <body>
@@ -91,6 +92,8 @@
         <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
             <h3 id="mTitle" style="margin:0">病患個資編輯</h3>
             <input type="hidden" id="eId">
+            <input type="hidden" id="eKeyInDate">
+            
             <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:15px;">病患姓名</label><input type="text" id="eName" placeholder="全名">
             <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">床號</label><input type="text" id="eBed" placeholder="例如: 502-1">
             <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">管路類型</label>
@@ -162,6 +165,7 @@
                 }
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
+                        <span class="key-in-tag">KEY-IN: ${item.keyindate || '--'}</span>
                         <div class="item-header">
                             <div class="patient-info"><b>${item.name || '未命名'}</b><span class="tube-tag">${item.type}</span><div style="font-size:13px;color:#8E8E93;margin-top:2px;">床號：${item.bed || '--'}</div></div>
                             <div class="status-badge">${statusLabel}</div>
@@ -178,13 +182,23 @@
 
         async function save() {
             const id = document.getElementById('eId').value || Date.now().toString();
+            
+            // 如果是新資料，自動抓取今天的日期
+            let keyDate = document.getElementById('eKeyInDate').value;
+            if(!document.getElementById('eId').value) {
+                keyDate = new Date().toISOString().split('T')[0];
+            }
+
             const data = {
                 id, name: document.getElementById('eName').value, bed: document.getElementById('eBed').value,
                 dr: document.getElementById('eDr').value, diag: document.getElementById('eDiag').value,
                 status: document.getElementById('eStatus').value, type: document.getElementById('eType').value,
                 startdate: document.getElementById('eStartDate').value, date: document.getElementById('eDate').value,
-                memo: document.getElementById('eMemo').value, owner: myID 
+                memo: document.getElementById('eMemo').value, 
+                owner: myID,
+                keyindate: keyDate // 存入建立日期
             };
+
             document.getElementById('loader').style.display = 'block';
             if (document.getElementById('eId').value) await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
             await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [data] }) });
@@ -202,11 +216,14 @@
 
         function openEditor(id = null) {
             document.getElementById('editor').style.display = 'flex';
-            const fields = ['eId','eName','eBed','eDr','eDiag','eStatus','eType','eStartDate','eDate','eMemo'];
+            const fields = ['eId','eName','eBed','eDr','eDiag','eStatus','eType','eStartDate','eDate','eMemo','eKeyInDate'];
             if (id) {
                 const cur = pList.find(i => i.id == id);
                 document.getElementById('mTitle').innerText = "修改病患資料";
-                fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
+                fields.forEach(f => { 
+                    const key = f.replace('e', '').toLowerCase(); 
+                    document.getElementById(f).value = cur[key] || ""; 
+                });
             } else { 
                 document.getElementById('mTitle').innerText = "新增病患個資";
                 fields.forEach(f => document.getElementById(f).value = ""); 
