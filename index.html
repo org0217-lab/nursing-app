@@ -5,62 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>臨床管理系統 by-fish</title>
     <style>
-        :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F2F2F7; --csmu-red: #8B0000; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+        :root { --primary: #007AFF; --danger: #FF3B30; --success: #34C759; --bg: #F8F9FA; --csmu-red: #8B0000; }
+        body { font-family: -apple-system, "SF Pro Display", sans-serif; background: var(--bg); margin: 0; padding: 12px; -webkit-text-size-adjust: 100%; overflow-x: hidden; color: #1C1C1E; }
         
         /* 中山醫開場特效 */
-        #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 10000;
-            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.5s;
-        }
-        .splash-logo { width: 100px; height: 100px; margin-bottom: 20px; animation: logo-entrance 1.2s ease-out forwards; opacity: 0; }
-        .splash-text { color: var(--csmu-red); font-size: 22px; font-weight: 900; opacity: 0; animation: text-fadein 1s ease-out 0.5s forwards; }
-        @keyframes logo-entrance { 0% { transform: scale(0.5); opacity: 0; filter: blur(10px); } 100% { transform: scale(1); opacity: 1; filter: blur(0); } }
-        @keyframes text-fadein { 0% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-        .splash-hidden { transform: translateY(-100%) !important; opacity: 0; pointer-events: none; }
+        #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); }
+        .splash-logo { width: 90px; height: 90px; margin-bottom: 20px; animation: logo-entrance 1s ease-out forwards; }
+        .splash-text { color: var(--csmu-red); font-size: 22px; font-weight: 900; }
+        .splash-hidden { transform: translateY(-100%); pointer-events: none; }
+        @keyframes logo-entrance { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* 主標題區塊 */
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .header img { height: 50px; width: 50px; object-fit: cover; border-radius: 12px; }
-        .header h2 { margin: 0; font-size: 18px; color: var(--csmu-red); flex-grow: 1; text-align: center; font-weight: 800; line-height: 1.2; }
-        .header h2 small { display: block; font-size: 13px; color: #8E8E93; font-weight: bold; margin-top: 2px; }
+        /* 標題區域優化 */
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: white; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header img { height: 48px; width: 48px; object-fit: cover; border-radius: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header h2 { margin: 0; font-size: 19px; color: var(--csmu-red); flex-grow: 1; text-align: center; font-weight: 800; }
+        .header h2 small { display: block; font-size: 11px; color: #AEAEB2; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
 
-        .user-info { text-align: center; font-size: 12px; color: #8E8E93; margin-bottom: 15px; }
-        .user-info span { color: var(--primary); font-weight: bold; text-decoration: underline; cursor: pointer; padding: 5px; }
+        .user-info { text-align: center; font-size: 12px; color: #8E8E93; margin-bottom: 15px; background: rgba(0,122,255,0.05); padding: 6px; border-radius: 10px; }
+        .user-info span { color: var(--primary); font-weight: 600; text-decoration: none; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--primary); margin-left: 5px; }
 
-        #loader { display: none; text-align: center; color: var(--primary); font-size: 13px; font-weight: bold; margin-bottom: 10px; }
-        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; cursor: pointer; }
+        .add-btn { width: 100%; background: linear-gradient(135deg, #007AFF, #0056B3); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: bold; font-size: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,122,255,0.3); transition: transform 0.2s; }
+        .add-btn:active { transform: scale(0.98); }
         
-        /* --- 修復後的病患卡片排版 --- */
-        .patient-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 8px solid var(--success); box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
-        .patient-item.urgent { border-left-color: var(--danger); background: #FFF5F5; }
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .patient-info b { font-size: 18px; color: #1C1C1E; }
-        .tube-tag { background:#E5E5EA; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:bold; margin-left:8px; display:inline-block; vertical-align: middle; }
+        /* 卡片細節升級 */
+        .patient-item { background: white; padding: 18px; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid var(--success); box-shadow: 0 2px 8px rgba(0,0,0,0.03); position: relative; border-right: 1px solid rgba(0,0,0,0.02); border-bottom: 2px solid rgba(0,0,0,0.02); }
+        .patient-item.urgent { border-left-color: var(--danger); background: #FFF9F9; }
         
-        .status-badge { font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #E5E5EA; font-weight: bold; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .patient-info b { font-size: 20px; color: #000; letter-spacing: -0.5px; }
+        .tube-tag { background: #F2F2F7; color: #3A3A3C; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
+        
+        .status-badge { font-size: 11px; padding: 5px 10px; border-radius: 8px; background: #E5E5EA; color: #3A3A3C; font-weight: 800; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
         .urgent .status-badge { background: var(--danger); color: white; }
 
-        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin-top: 10px; border-top: 1px solid #F2F2F7; padding-top: 10px; }
-        .date-row { display: flex; align-items: center; font-size: 13px; }
-        .date-label { color: #8E8E93; margin-right: 8px; white-space: nowrap; }
-        .date-value { color: #3A3A3C; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 15px; margin-top: 12px; border-top: 1px solid #F2F2F7; padding-top: 12px; }
+        .date-row { display: flex; flex-direction: column; }
+        .date-label { color: #8E8E93; font-size: 11px; margin-bottom: 2px; font-weight: 500; }
+        .date-value { color: #3A3A3C; font-size: 14px; font-weight: 600; }
 
-        /* 自訂使用者視窗 */
-        #userModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 20000; }
-        .user-modal-content { background: white; width: 85%; max-width: 350px; padding: 25px; border-radius: 20px; text-align: center; }
-        .user-modal-content input { width: 100%; padding: 12px; border: 1px solid #D1D1D6; border-radius: 10px; font-size: 18px; text-align: center; margin: 20px 0; box-sizing: border-box; }
-
-        /* 編輯視窗 */
-        #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 10000; }
-        .modal { background: white; width: 92%; max-width: 450px; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
-        label { display: block; margin-top: 12px; font-size: 13px; color: #8E8E93; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #D1D1D6; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .save { background: var(--primary); color: white; flex: 2; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
-        .cancel { background: #E5E5EA; flex: 1; border: none; padding: 12px; border-radius: 10px; }
+        /* 視窗與輸入優化 */
+        #userModal, #editor { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 20000; }
+        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        input, select, textarea { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #E5E5EA; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #F9F9F9; transition: border-color 0.2s; }
+        input:focus { border-color: var(--primary); outline: none; background: white; }
+        .btn-group { display: flex; gap: 12px; margin-top: 25px; }
+        .save { background: var(--primary); color: white; flex: 2; border: none; padding: 14px; border-radius: 12px; font-weight: bold; }
+        .cancel { background: #E5E5EA; color: #3A3A3C; flex: 1; border: none; padding: 14px; border-radius: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -68,42 +58,42 @@
     <div id="splash-screen">
         <img src="https://upload.wikimedia.org/wikipedia/zh/thumb/e/ee/Chung_Shan_Medical_University_seal.svg/1280px-Chung_Shan_Medical_University_seal.svg.png" class="splash-logo">
         <div class="splash-text">臨床管理系統</div>
-        <div style="color: #8E8E93; margin-top: 5px; font-weight: bold;">by-fish</div>
+        <div style="color: #AEAEB2; font-size: 13px; margin-top: 8px;">FISH CLINICAL MONITORING</div>
     </div>
 
     <div class="container">
         <div class="header">
-            <img src="logo.png" alt="Left">
+            <img src="logo.png">
             <h2>臨床管理系統<small>by-fish</small></h2>
-            <img src="logo.png" alt="Right">
+            <img src="logo.png">
         </div>
         
-        <div class="user-info">目前使用者代號：<span onclick="showUserModal()" id="displayUser">載入中...</span></div>
-        <div id="loader">⌛ 同步雲端資料中...</div>
+        <div class="user-info">護理小隊員：<span onclick="showUserModal()" id="displayUser">...</span></div>
+        <div id="loader" style="color:#8E8E93;">🔄 雲端同步中...</div>
         
         <button class="add-btn" onclick="openEditor()">＋ 新增病患個資</button>
         <div id="patientList"></div>
     </div>
 
     <div id="userModal">
-        <div class="user-modal-content">
-            <h3 style="color:var(--csmu-red);margin:0;">臨床管理系統 by-fish</h3>
-            <p style="color:#8E8E93;font-size:14px;margin-top:10px;">請輸入您的使用者代號：</p>
-            <input type="text" id="userInputField" placeholder="例如：nurse01">
+        <div class="modal-content">
+            <h3 style="color:var(--csmu-red);margin:0;text-align:center;">使用者設定</h3>
+            <p style="color:#8E8E93;font-size:14px;text-align:center;margin:10px 0 20px 0;">請輸入專屬代號以過濾清單</p>
+            <input type="text" id="userInputField" placeholder="例如：OldData">
             <div class="btn-group">
                 <button class="cancel" onclick="document.getElementById('userModal').style.display='none'">取消</button>
-                <button class="save" onclick="confirmUser()">確定</button>
+                <button class="save" onclick="confirmUser()">儲存代號</button>
             </div>
         </div>
     </div>
 
     <div id="editor" onclick="if(event.target==this)closeEditor()">
-        <div class="modal">
-            <h3 id="mTitle" style="margin:0">編輯資料</h3>
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <h3 id="mTitle" style="margin:0">病患個資編輯</h3>
             <input type="hidden" id="eId">
-            <label>病患姓名</label><input type="text" id="eName">
-            <label>床號</label><input type="text" id="eBed">
-            <label>管路類型</label>
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:15px;">病患姓名</label><input type="text" id="eName" placeholder="全名">
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">床號</label><input type="text" id="eBed" placeholder="例如: 502-1">
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">管路類型</label>
             <select id="eType">
                 <option value="NG">NG</option><option value="Foley">Foley</option>
                 <option value="PCND">PCND</option><option value="Tr">Tr</option>
@@ -111,18 +101,18 @@
                 <option value="Pigtail">Pigtail</option><option value="PTCD">PTCD</option>
             </select>
             <div style="display:flex; gap:10px">
-                <div style="flex:1"><label>置放日期</label><input type="date" id="eStartDate"></div>
-                <div style="flex:1"><label>到期日期</label><input type="date" id="eDate"></div>
+                <div style="flex:1"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">置放日</label><input type="date" id="eStartDate"></div>
+                <div style="flex:1"><label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">到期日</label><input type="date" id="eDate"></div>
             </div>
-            <label>主治醫師</label><input type="text" id="eDr">
-            <label>診斷項目</label><input type="text" id="eDiag">
-            <label>身份</label><input type="text" id="eStatus">
-            <label>備註事項</label><textarea id="eMemo" style="height:60px"></textarea>
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">主治醫師</label><input type="text" id="eDr">
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">診斷項目</label><input type="text" id="eDiag">
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">身份</label><input type="text" id="eStatus">
+            <label style="font-size:12px;color:#8E8E93;font-weight:bold;display:block;margin-top:10px;">備註</label><textarea id="eMemo" style="height:80px"></textarea>
             <div class="btn-group">
                 <button class="cancel" onclick="closeEditor()">取消</button>
                 <button class="save" onclick="save()">儲存同步</button>
             </div>
-            <button style="background:none; color:var(--danger); width:100%; margin-top:15px; border:none; font-size:13px;" onclick="del()">⚠️ 刪除此紀錄</button>
+            <button style="background:none; color:var(--danger); width:100%; margin-top:20px; border:none; font-size:13px; font-weight:bold;" onclick="del()">⚠️ 刪除此紀錄</button>
         </div>
     </div>
 
@@ -173,14 +163,14 @@
                 return `
                     <div class="patient-item ${isUrgent ? 'urgent' : ''}" onclick="openEditor('${item.id}')">
                         <div class="item-header">
-                            <div class="patient-info"><b>${item.name || '未命名'} (${item.bed || '--'})</b><span class="tube-tag">${item.type}</span></div>
+                            <div class="patient-info"><b>${item.name || '未命名'}</b><span class="tube-tag">${item.type}</span><div style="font-size:13px;color:#8E8E93;margin-top:2px;">床號：${item.bed || '--'}</div></div>
                             <div class="status-badge">${statusLabel}</div>
                         </div>
                         <div class="date-grid">
-                            <div class="date-row"><span class="date-label">到期</span><span class="date-value">${item.date || '--'}</span></div>
-                            <div class="date-row"><span class="date-label">醫生</span><span class="date-value">${item.dr || '--'}</span></div>
-                            <div class="date-row"><span class="date-label">診斷</span><span class="date-value">${item.diag || '--'}</span></div>
-                            <div class="date-row"><span class="date-label">身份</span><span class="date-value">${item.status || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">管路到期</span><span class="date-value">${item.date || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">主治醫生</span><span class="date-value">${item.dr || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">主要診斷</span><span class="date-value">${item.diag || '--'}</span></div>
+                            <div class="date-row"><span class="date-label">身份類別</span><span class="date-value">${item.status || '--'}</span></div>
                         </div>
                     </div>`;
             }).join('') : '<p style="text-align:center; color:#8E8E93; margin-top:50px;">目前您的清單無資料</p>';
@@ -203,7 +193,7 @@
 
         async function del() {
             const id = document.getElementById('eId').value;
-            if (id && confirm("確定要刪除嗎？")) {
+            if (id && confirm("確定要刪除這筆資料嗎？")) {
                 document.getElementById('loader').style.display = 'block';
                 await fetch(`${API_URL}/id/${id}`, { method: 'DELETE' });
                 fetchFromCloud(); closeEditor();
@@ -215,8 +205,12 @@
             const fields = ['eId','eName','eBed','eDr','eDiag','eStatus','eType','eStartDate','eDate','eMemo'];
             if (id) {
                 const cur = pList.find(i => i.id == id);
+                document.getElementById('mTitle').innerText = "修改病患資料";
                 fields.forEach(f => { const key = f.replace('e', '').toLowerCase(); document.getElementById(f).value = cur[key] || ""; });
-            } else { fields.forEach(f => document.getElementById(f).value = ""); }
+            } else { 
+                document.getElementById('mTitle').innerText = "新增病患個資";
+                fields.forEach(f => document.getElementById(f).value = ""); 
+            }
         }
         function closeEditor() { document.getElementById('editor').style.display = 'none'; }
         window.addEventListener('load', () => { setTimeout(() => document.getElementById('splash-screen').classList.add('splash-hidden'), 2200); });
