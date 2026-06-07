@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虐貓黑名單系統</title>
+    <title>虐貓上傳系統</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .zoomable-img {
+            cursor: zoom-in;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen py-8 px-4 font-sans text-gray-800">
 
@@ -22,14 +27,14 @@
 
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-red-600 mb-2">
-                <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓黑名單系統
+                <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓上傳系統
             </h1>
             <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可直接拍照或選擇相片回報，僅限管理員有權限刪除。</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-                <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">回報黑名單資料</h2>
+                <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">回報名單資料</h2>
                 <form id="uploadForm" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">姓名 / 綽號 <span class="text-red-500">*</span></label>
@@ -93,23 +98,27 @@
         </div>
     </div>
 
+    <div id="imageLightbox" class="hidden fixed inset-0 bg-black/80 justify-center items-center p-4 z-50 cursor-zoom-out" onclick="closeLightbox()">
+        <button class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition" onclick="closeLightbox()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <img id="lightboxImg" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain" src="" alt="放大證物">
+    </div>
+
     <script>
-        // ⚠️ 1. 請填入你在 SheetDB 獲得的 API 網址
+        // 已自動填入你的 SheetDB API 網址
         const SHEETDB_URL = "https://sheetdb.io/api/v1/l8t0q7pya1f58";
 
-        // ⚠️ 2. 請在此處填入你從 Imgbb 申請到的免費 API 金鑰
+        // 已自動填入你的 Imgbb 免費 API 金鑰
         const IMGBB_API_KEY = "553419e2ce49f5d42f3c452cf988fe19";
 
-        // ⚠️ 3. 在此設定你的管理員登入密碼
-        const ADMIN_PASSWORD = "123123";
+        // ⚠️ 預設管理員登入密碼（你可以隨時自己修改這行引號內的密碼）
+        const ADMIN_PASSWORD = "admin123";
 
         let isAdmin = false;
         let selectedFile = null;
 
         window.onload = function() {
-            if(SHEETDB_URL.includes("請在此處") || IMGBB_API_KEY.includes("請在此處")) {
-                alert("填寫提醒：請記得在程式碼中填入 SheetDB 網址與 Imgbb 金鑰喔！");
-            }
             fetchData();
         };
 
@@ -127,7 +136,7 @@
             }
         });
 
-        // 抓取資料
+        // 抓取資料並在表格中渲染
         async function fetchData() {
             const tbody = document.getElementById('memberTableBody');
             tbody.innerHTML = `<tr id="emptyRow"><td colspan="4" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>`;
@@ -146,7 +155,9 @@
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-red-50/30 transition';
                     tr.innerHTML = `
-                        <td class="p-3"><img src="${item.photo}" class="w-12 h-12 object-cover rounded shadow-sm border" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>
+                        <td class="p-3">
+                            <img src="${item.photo}" onclick="openLightbox('${item.photo}')" class="zoomable-img w-12 h-12 object-cover rounded shadow-sm border hover:opacity-80 transition" onerror="this.src='https://placehold.co/100x100?text=No+Image'">
+                        </td>
                         <td class="p-3 font-medium text-gray-900">${item.name}</td>
                         <td class="p-3 text-gray-600">${item.note}</td>
                         <td class="p-3 text-center action-cell ${isAdmin ? '' : 'hidden'}">
@@ -162,7 +173,7 @@
             }
         }
 
-        // 提交表單（核心修改：自動處理圖片上傳）
+        // 提交表單（自動圖片上傳）
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -175,7 +186,6 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 照片上傳中...`;
 
-                // 1. 先把圖片打包送到 Imgbb 圖床
                 const formData = new FormData();
                 formData.append('image', selectedFile);
 
@@ -186,15 +196,12 @@
                 const imgbbResult = await imgbbResponse.json();
 
                 if(!imgbbResult.success) {
-                    throw new Array('圖床伺服器拒絕上傳');
+                    throw new Error('圖床伺服器拒絕上傳');
                 }
 
-                // 拿到自動生成的網址
                 const photoUrl = imgbbResult.data.url;
-
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
 
-                // 2. 把姓名、備註和拿到的「圖片網址」一起送到 Google 試算表
                 const response = await fetch(SHEETDB_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -213,7 +220,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                alert('上傳發生錯誤，請確認 Imgbb API 金鑰是否過期或正確。');
+                alert('上傳發生錯誤，請稍後再試。');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> 傳送資料`;
@@ -228,6 +235,22 @@
                 if(response.ok) { alert('刪除成功！'); fetchData(); } else { alert('刪除失敗。'); }
             } catch (error) { alert('刪除連線失敗。'); }
         }
+
+        // 打開大圖燈箱控制
+        window.openLightbox = (src) => {
+            const lightbox = document.getElementById('imageLightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            lightboxImg.src = src;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+        };
+
+        // 關閉大圖燈箱控制
+        window.closeLightbox = () => {
+            const lightbox = document.getElementById('imageLightbox');
+            lightbox.classList.add('hidden');
+            lightbox.classList.remove('flex');
+        };
 
         // 管理員彈窗與登入控制
         window.toggleLoginModal = () => {
