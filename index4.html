@@ -24,7 +24,7 @@
             <h1 class="text-3xl font-bold text-red-600 mb-2">
                 <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓黑名單系統
             </h1>
-            <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可回報與檢視，僅限管理員有權限刪除。</p>
+            <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可直接拍照或選擇相片回報，僅限管理員有權限刪除。</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -40,9 +40,15 @@
                         <input type="text" id="noteInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：行凶地點、涉案具體事由">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物 (請貼上圖片網址) <span class="text-red-500">*</span></label>
-                        <input type="url" id="photoInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="請貼上圖片的網路網址 (網址開頭為 https://)">
-                        <p class="text-[11px] text-gray-400 mt-1">💡 因不透過資料庫，此精簡版請先將圖片上傳至免費圖床（如 Imgur）並在此貼上圖片連結。</p>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 <span class="text-red-500">*</span></label>
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition cursor-pointer group">
+                            <input type="file" id="photoInput" accept="image/*" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <div id="uploadPrompt" class="space-y-1">
+                                <i class="fa-solid fa-image text-2xl text-gray-400 group-hover:text-red-500 transition"></i>
+                                <p class="text-xs text-gray-500">點擊選擇照片或拍照</p>
+                            </div>
+                            <img id="formPreview" class="hidden max-h-24 mx-auto rounded shadow-sm mt-1">
+                        </div>
                     </div>
                     <button type="submit" id="submitBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-sm flex justify-center items-center gap-2">
                         <i class="fa-solid fa-cloud-arrow-up"></i> 傳送資料
@@ -88,32 +94,46 @@
     </div>
 
     <script>
-        // ⚠️ 請在下方雙引號內，貼上你在 SheetDB 獲得的 API 網址
+        // ⚠️ 1. 請填入你在 SheetDB 獲得的 API 網址
         const SHEETDB_URL = "https://sheetdb.io/api/v1/l8t0q7pya1f58";
 
-        // ⚠️ 在此設定你的管理員登入密碼（可以自由修改）
+        // ⚠️ 2. 請在此處填入你從 Imgbb 申請到的免費 API 金鑰
+        const IMGBB_API_KEY = "553419e2ce49f5d42f3c452cf988fe19";
+
+        // ⚠️ 3. 在此設定你的管理員登入密碼
         const ADMIN_PASSWORD = "123123";
 
         let isAdmin = false;
+        let selectedFile = null;
 
-        // 初始化載入資料
         window.onload = function() {
-            if(SHEETDB_URL.includes("請在此處貼上")) {
-                alert("錯誤：請先在程式碼第 113 行填入你的 SheetDB API 網址！");
-                return;
+            if(SHEETDB_URL.includes("請在此處") || IMGBB_API_KEY.includes("請在此處")) {
+                alert("填寫提醒：請記得在程式碼中填入 SheetDB 網址與 Imgbb 金鑰喔！");
             }
             fetchData();
         };
 
-        // 從 Google 試算表抓取資料並渲染表格
+        // 處理圖片即時預覽
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('formPreview').src = event.target.result;
+                    document.getElementById('formPreview').classList.remove('hidden');
+                    document.getElementById('uploadPrompt').classList.add('hidden');
+                }
+                reader.readAsDataURL(selectedFile);
+            }
+        });
+
+        // 抓取資料
         async function fetchData() {
             const tbody = document.getElementById('memberTableBody');
             tbody.innerHTML = `<tr id="emptyRow"><td colspan="4" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>`;
-            
             try {
                 const response = await fetch(SHEETDB_URL);
                 const data = await response.json();
-                
                 document.getElementById('count').textContent = data.length;
                 tbody.innerHTML = '';
 
@@ -122,12 +142,11 @@
                     return;
                 }
 
-                // 將最新上傳的排在最前面
                 data.reverse().forEach((item) => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-red-50/30 transition';
                     tr.innerHTML = `
-                        <td class="p-3"><img src="${item.photo}" class="w-12 h-12 object-cover rounded shadow-sm border onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>
+                        <td class="p-3"><img src="${item.photo}" class="w-12 h-12 object-cover rounded shadow-sm border" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>
                         <td class="p-3 font-medium text-gray-900">${item.name}</td>
                         <td class="p-3 text-gray-600">${item.note}</td>
                         <td class="p-3 text-center action-cell ${isAdmin ? '' : 'hidden'}">
@@ -139,69 +158,82 @@
                     tbody.appendChild(tr);
                 });
             } catch (error) {
-                tbody.innerHTML = `<tr id="emptyRow"><td colspan="4" class="p-8 text-center text-red-500"><i class="fa-solid fa-circle-xmark text-2xl mb-2 block"></i>讀取資料失敗，請確認 API 網址是否正確。</td></tr>`;
+                tbody.innerHTML = `<tr id="emptyRow"><td colspan="4" class="p-8 text-center text-red-500"><i class="fa-solid fa-circle-xmark text-2xl mb-2 block"></i>讀取資料失敗。</td></tr>`;
             }
         }
 
-        // 提交表單送到 Google 試算表
+        // 提交表單（核心修改：自動處理圖片上傳）
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
-            
+            if(!selectedFile) return alert('請選擇或拍攝一張照片！');
+
             const name = document.getElementById('nameInput').value;
             const note = document.getElementById('noteInput').value || '未填寫';
-            const photo = document.getElementById('photoInput').value;
 
             try {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 傳送中...`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 照片上傳中...`;
 
-                // 送出 POST 請求給 SheetDB
+                // 1. 先把圖片打包送到 Imgbb 圖床
+                const formData = new FormData();
+                formData.append('image', selectedFile);
+
+                const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const imgbbResult = await imgbbResponse.json();
+
+                if(!imgbbResult.success) {
+                    throw new Array('圖床伺服器拒絕上傳');
+                }
+
+                // 拿到自動生成的網址
+                const photoUrl = imgbbResult.data.url;
+
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
+
+                // 2. 把姓名、備註和拿到的「圖片網址」一起送到 Google 試算表
                 const response = await fetch(SHEETDB_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [{ name, note, photo }] })
+                    body: JSON.stringify({ data: [{ name, note, photo: photoUrl }] })
                 });
 
                 if(response.ok) {
-                    alert('回報成功！資料已同步至雲端。');
+                    alert('回報成功！照片已自動同步至雲端名單。');
                     document.getElementById('uploadForm').reset();
-                    fetchData(); // 重新整理表格
+                    document.getElementById('formPreview').classList.add('hidden');
+                    document.getElementById('uploadPrompt').classList.remove('hidden');
+                    selectedFile = null;
+                    fetchData();
                 } else {
-                    alert('上傳失敗，請檢查 SheetDB 額度或設定。');
+                    alert('資料庫寫入失敗。');
                 }
             } catch (error) {
-                alert('系統連線錯誤！');
+                console.error(error);
+                alert('上傳發生錯誤，請確認 Imgbb API 金鑰是否過期或正確。');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> 傳送資料`;
             }
         });
 
-        // 刪除資料（依據姓名刪除試算表對應列）
+        // 刪除資料
         async function deleteMember(name) {
             if(!confirm(`確定要刪除「${name}」的列管資料嗎？`)) return;
             try {
-                const response = await fetch(`${SHEETDB_URL}/name/${name}`, {
-                    method: 'DELETE'
-                });
-                if(response.ok) {
-                    alert('刪除成功！');
-                    fetchData();
-                } else {
-                    alert('刪除失敗。');
-                }
-            } catch (error) {
-                alert('刪除連線失敗。');
-            }
+                const response = await fetch(`${SHEETDB_URL}/name/${name}`, { method: 'DELETE' });
+                if(response.ok) { alert('刪除成功！'); fetchData(); } else { alert('刪除失敗。'); }
+            } catch (error) { alert('刪除連線失敗。'); }
         }
 
-        // 管理員權限制
+        // 管理員彈窗與登入控制
         window.toggleLoginModal = () => {
             document.getElementById('loginModal').classList.toggle('hidden');
             document.getElementById('loginModal').classList.toggle('flex');
         };
-
         window.login = () => {
             const pass = document.getElementById('adminPassword').value;
             if(pass === ADMIN_PASSWORD) {
@@ -209,16 +241,11 @@
                 document.getElementById('loginBtn').classList.add('hidden');
                 document.getElementById('adminZone').classList.remove('hidden');
                 document.getElementById('adminZone').classList.add('flex');
-                
-                // 顯示所有刪除按鈕與欄位標題
                 document.querySelectorAll('.action-header, .action-cell').forEach(el => el.classList.remove('hidden'));
                 toggleLoginModal();
                 document.getElementById('adminPassword').value = '';
-            } else {
-                alert('密碼錯誤！');
-            }
+            } else { alert('密碼錯誤！'); }
         };
-
         window.logout = () => {
             if(confirm('確定要登出管理員身分嗎？')) {
                 isAdmin = false;
