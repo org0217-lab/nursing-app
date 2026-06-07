@@ -3,78 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名單與照片上傳系統</title>
+    <title>虐貓黑名單系統</title>
+    <!-- 引入 Tailwind CSS 讓介面更美觀 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50 min-h-screen py-8 px-4 font-sans text-gray-800">
 
     <div class="max-w-4xl mx-auto">
+        <!-- 標題區 -->
         <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                <i class="fa-solid fa-users-gear text-indigo-600 mr-2"></i>名單與照片上傳系統
+            <h1 class="text-3xl font-bold text-red-600 mb-2">
+                <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓黑名單系統
             </h1>
-            <p class="text-gray-500">請在下方輸入資料並上傳照片，系統將自動彙整至下方表格。</p>
+            <p class="text-gray-500">請在下方輸入相關人員資料、具體事證說明並上傳照片，系統將自動彙整至下方表格。</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- 左側：輸入表單 -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-                <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">新增成員</h2>
+                <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">新增黑名單資料</h2>
                 <form id="uploadForm" class="space-y-4">
+                    <!-- 姓名 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">姓名 <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">姓名 / 綽號 <span class="text-red-500">*</span></label>
                         <input type="text" id="nameInput" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                            placeholder="請輸入姓名">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
+                            placeholder="請輸入姓名或網路對話綽號">
                     </div>
 
+                    <!-- 事件說明/遭遇地點 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">編號 / 備註</label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">事件說明 / 遭遇地點</label>
                         <input type="text" id="noteInput" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                            placeholder="例如：員工編號或職稱">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
+                            placeholder="例如：行凶地點、涉案具體事由">
                     </div>
 
+                    <!-- 照片上傳 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 <span class="text-red-500">*</span></label>
                         <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition cursor-pointer group">
                             <input type="file" id="photoInput" accept="image/*" required 
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                             <div id="uploadPrompt" class="space-y-1">
-                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 group-hover:text-indigo-500 transition"></i>
+                                <i class="fa-solid fa-image text-2xl text-gray-400 group-hover:text-red-500 transition"></i>
                                 <p class="text-xs text-gray-500">點擊或拖曳照片至此</p>
                             </div>
+                            <!-- 圖片預覽小框 -->
                             <img id="formPreview" class="hidden max-h-24 mx-auto rounded shadow-sm mt-1">
                         </div>
                     </div>
 
+                    <!-- 提交按鈕 -->
                     <button type="submit" 
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-sm flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> 加入名單
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-sm flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> 加入黑名單
                     </button>
                 </form>
             </div>
 
+            <!-- 右側：資料顯示表格 -->
             <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-lg font-semibold text-gray-700">目前名單 (<span id="count">0</span>)</h2>
+                    <h2 class="text-lg font-semibold text-gray-700">目前列管名單 (<span id="count">0</span>)</h2>
                 </div>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm font-medium border-b border-gray-200">
-                                <th class="p-3">照片</th>
-                                <th class="p-3">姓名</th>
-                                <th class="p-3">編號 / 備註</th>
+                                <th class="p-3">照片 / 證物</th>
+                                <th class="p-3">姓名 / 綽號</th>
+                                <th class="p-3">事件說明 / 地點</th>
                                 <th class="p-3 text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody id="memberTableBody" class="divide-y divide-gray-100 text-sm">
+                            <!-- 預設空狀態提示 -->
                             <tr id="emptyRow">
                                 <td colspan="4" class="p-8 text-center text-gray-400">
-                                    <i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>
-                                    目前暫無資料，請從左側表單新增。
+                                    <i class="fa-solid fa-shield-cat text-3xl mb-2 block text-gray-300"></i>
+                                    目前暫無列管資料。
                                 </td>
                             </tr>
                         </tbody>
@@ -84,6 +94,7 @@
         </div>
     </div>
 
+    <!-- JavaScript 邏輯控制 -->
     <script>
         const photoInput = document.getElementById('photoInput');
         const formPreview = document.getElementById('formPreview');
@@ -114,7 +125,7 @@
             e.preventDefault();
 
             const name = document.getElementById('nameInput').value;
-            const note = document.getElementById('noteInput').value || '無';
+            const note = document.getElementById('noteInput').value || '未填寫';
             const photoSrc = formPreview.src;
 
             // 隱藏空狀態提示
@@ -124,15 +135,15 @@
 
             // 建立新表格列
             const tr = document.createElement('tr');
-            tr.className = 'hover:bg-gray-50 transition';
+            tr.className = 'hover:bg-red-50/50 transition';
             tr.innerHTML = `
                 <td class="p-3">
-                    <img src="${photoSrc}" class="w-12 h-12 object-cover rounded-full shadow-sm border border-gray-200">
+                    <img src="${photoSrc}" class="w-12 h-12 object-cover rounded shadow-sm border border-gray-200 animate-fade-in">
                 </td>
                 <td class="p-3 font-medium text-gray-900">${name}</td>
-                <td class="p-3 text-gray-500">${note}</td>
+                <td class="p-3 text-gray-600">${note}</td>
                 <td class="p-3 text-center">
-                    <button onclick="deleteMember(this)" class="text-red-500 hover:text-red-700 transition p-1">
+                    <button onclick="deleteMember(this)" class="text-gray-400 hover:text-red-600 transition p-1">
                         <i class="fa-regular fa-trash-can text-base"></i>
                     </button>
                 </td>
