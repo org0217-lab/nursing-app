@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虐貓上傳系統</title>
+    <title>虐貓通報系統</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -27,7 +27,7 @@
 
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-red-600 mb-2">
-                <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓上傳系統
+                <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓通報系統
             </h1>
             <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可直接拍照或選擇相片回報，僅限管理員有權限刪除。</p>
         </header>
@@ -41,8 +41,8 @@
                         <input type="text" id="nameInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="請輸入姓名或網路綽號">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">事件說明 / 遭遇地點</label>
-                        <input type="text" id="noteInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：行凶地點、涉案具體事由">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">事件說明 / 遭遇地點 <span class="text-red-500">*</span></label>
+                        <input type="text" id="noteInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：行凶地點、涉案具體事由">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 <span class="text-red-500">*</span></label>
@@ -106,13 +106,8 @@
     </div>
 
     <script>
-        // 已自動填入你的 SheetDB API 網址
         const SHEETDB_URL = "https://sheetdb.io/api/v1/l8t0q7pya1f58";
-
-        // 已自動填入你的 Imgbb 免費 API 金鑰
         const IMGBB_API_KEY = "553419e2ce49f5d42f3c452cf988fe19";
-
-        // ⚠️ 預設管理員登入密碼（你可以隨時自己修改這行引號內的密碼）
         const ADMIN_PASSWORD = "admin123";
 
         let isAdmin = false;
@@ -180,7 +175,7 @@
             if(!selectedFile) return alert('請選擇或拍攝一張照片！');
 
             const name = document.getElementById('nameInput').value;
-            const note = document.getElementById('noteInput').value || '未填寫';
+            const note = document.getElementById('noteInput').value; // 移除預設的 '未填寫'
 
             try {
                 submitBtn.disabled = true;
