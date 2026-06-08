@@ -37,7 +37,7 @@
                 <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">回報名單資料</h2>
                 <form id="uploadForm" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">姓名 / 綽號 <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">虐貓者姓名或網路綽號 <span class="text-red-500">*</span></label>
                         <input type="text" id="nameInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="請輸入姓名或網路綽號">
                     </div>
                     <div>
@@ -111,16 +111,16 @@
         const ADMIN_PASSWORD = "admin123";
 
         let isAdmin = false;
-        let selectedFiles = []; // 儲存多個選取的檔案
+        let selectedFiles = [];
 
         window.onload = function() {
             fetchData();
         };
 
-        // 🌟 處理多張圖片即時預覽 🌟
+        // 處理多張圖片即時預覽
         document.getElementById('photoInput').addEventListener('change', (e) => {
             const previewContainer = document.getElementById('previewContainer');
-            previewContainer.innerHTML = ''; // 清空舊預覽
+            previewContainer.innerHTML = '';
             selectedFiles = Array.from(e.target.files);
 
             if (selectedFiles.length > 0) {
@@ -160,7 +160,6 @@
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-red-50/30 transition';
                     
-                    // 🌟 支援解開由逗號分隔的多張圖片網址 🌟
                     let photoHtml = `<div class="flex flex-wrap gap-1.5 max-w-[160px]">`;
                     if (item.photo) {
                         const urls = item.photo.split(',');
@@ -192,7 +191,7 @@
             }
         }
 
-        // 提交表單（🌟 支援多圖跑迴圈依次上傳 🌟）
+        // 提交表單（多圖批次上傳）
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -203,10 +202,8 @@
 
             try {
                 submitBtn.disabled = true;
-                
                 let uploadedUrls = [];
                 
-                // 跑迴圈一張張上傳到 Imgbb
                 for (let i = 0; i < selectedFiles.length; i++) {
                     submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 照片上傳中 (${i + 1}/${selectedFiles.length})...`;
                     
@@ -227,8 +224,6 @@
                 }
 
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
-
-                // 將所有網址用「逗號」串接成一個字串發送給 SheetDB
                 const finalPhotoString = uploadedUrls.join(',');
 
                 const response = await fetch(SHEETDB_URL, {
@@ -249,7 +244,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                alert('上傳發生錯誤，請確認網路連線或稍後再試。');
+                alert('上傳發生錯誤，請稍後再試。');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> 傳送資料`;
@@ -265,7 +260,7 @@
             } catch (error) { alert('刪除連線失敗。'); }
         }
 
-        // 打開大圖燈箱控制
+        // 大圖燈箱控制
         window.openLightbox = (src) => {
             const lightbox = document.getElementById('imageLightbox');
             const lightboxImg = document.getElementById('lightboxImg');
@@ -273,15 +268,13 @@
             lightbox.classList.remove('hidden');
             lightbox.classList.add('flex');
         };
-
-        // 關閉大圖燈箱控制
         window.closeLightbox = () => {
             const lightbox = document.getElementById('imageLightbox');
             lightbox.classList.add('hidden');
             lightbox.classList.remove('flex');
         };
 
-        // 管理員彈窗與登入控制
+        // 管理員密碼控制
         window.toggleLoginModal = () => {
             document.getElementById('loginModal').classList.toggle('hidden');
             document.getElementById('loginModal').classList.toggle('flex');
