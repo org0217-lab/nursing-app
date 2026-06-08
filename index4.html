@@ -14,7 +14,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen py-8 px-4 font-sans text-gray-800">
 
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <div class="flex justify-end mb-4 gap-2 text-sm">
             <div id="adminZone" class="hidden items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
                 <i class="fa-solid fa-user-shield"></i> 管理員模式已啟動
@@ -41,8 +41,12 @@
                         <input type="text" id="nameInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="請輸入姓名或網路綽號">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">事件說明 / 遭遇地點 <span class="text-red-500">*</span></label>
-                        <input type="text" id="noteInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：行凶地點、涉案具體事由">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">事件說明 <span class="text-red-500">*</span></label>
+                        <input type="text" id="noteInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：涉案具體事由、惡意行為">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">遭遇地點 <span class="text-red-500">*</span></label>
+                        <input type="text" id="locationInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：某縣市某路段、某社群社團">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 (可多選) <span class="text-red-500">*</span></label>
@@ -70,14 +74,15 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm font-medium border-b border-gray-200">
-                                <th class="p-3">照片 / 證物 (點擊放大)</th>
+                                <th class="p-3 w-32">照片 / 證物</th>
                                 <th class="p-3">姓名 / 綽號</th>
-                                <th class="p-3">事件說明 / 地點</th>
-                                <th class="p-3 text-center action-header hidden">操作</th>
+                                <th class="p-3">事件說明</th>
+                                <th class="p-3">遭遇地點</th>
+                                <th class="p-3 text-center action-header hidden w-16">操作</th>
                             </tr>
                         </thead>
                         <tbody id="memberTableBody" class="divide-y divide-gray-100 text-sm">
-                            <tr id="emptyRow"><td colspan="4" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>
+                            <tr id="emptyRow"><td colspan="5" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -144,7 +149,7 @@
         // 抓取資料並在表格中渲染
         async function fetchData() {
             const tbody = document.getElementById('memberTableBody');
-            tbody.innerHTML = `<tr id="emptyRow"><td colspan="4" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>`;
+            tbody.innerHTML = `<tr id="emptyRow"><td colspan="5" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>`;
             try {
                 const response = await fetch(SHEETDB_URL);
                 const data = await response.json();
@@ -152,7 +157,7 @@
                 tbody.innerHTML = '';
 
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr id="emptyRow"><td colspan="4" class="p-8 text-center text-gray-400"><i class="fa-solid fa-shield-cat text-3xl mb-2 block text-gray-300"></i>目前暫無列管資料。</td></tr>`;
+                    tbody.innerHTML = `<tr id="emptyRow"><td colspan="5" class="p-8 text-center text-gray-400"><i class="fa-solid fa-shield-cat text-3xl mb-2 block text-gray-300"></i>目前暫無列管資料。</td></tr>`;
                     return;
                 }
 
@@ -174,11 +179,12 @@
                     }
                     photoHtml += `</div>`;
 
-                    // 🌟 這裡修改為傳入項目的唯一 id 進行刪除
+                    // 🌟 這裡將 note 拆開，並將原本寫在 note 欄位裡的「地點」資料一併渲染到獨立一格
                     tr.innerHTML = `
                         <td class="p-3">${photoHtml}</td>
-                        <td class="p-3 font-medium text-gray-900">${item.name}</td>
-                        <td class="p-3 text-gray-600">${item.note}</td>
+                        <td class="p-3 font-medium text-gray-900">${item.name || ''}</td>
+                        <td class="p-3 text-gray-600">${item.note || ''}</td>
+                        <td class="p-3 text-gray-600">${item.note || ''}</td>
                         <td class="p-3 text-center action-cell ${isAdmin ? '' : 'hidden'}">
                             <button onclick="deleteMember('${item.id}', '${item.name}')" class="text-gray-400 hover:text-red-600 transition p-1">
                                 <i class="fa-regular fa-trash-can text-base"></i>
@@ -188,7 +194,7 @@
                     tbody.appendChild(tr);
                 });
             } catch (error) {
-                tbody.innerHTML = `<tr id="emptyRow"><td colspan="4" class="p-8 text-center text-red-500"><i class="fa-solid fa-circle-xmark text-2xl mb-2 block"></i>讀取資料失敗。</td></tr>`;
+                tbody.innerHTML = `<tr id="emptyRow"><td colspan="5" class="p-8 text-center text-red-500"><i class="fa-solid fa-circle-xmark text-2xl mb-2 block"></i>讀取資料失敗。</td></tr>`;
             }
         }
 
@@ -200,8 +206,8 @@
 
             const name = document.getElementById('nameInput').value;
             const note = document.getElementById('noteInput').value;
+            const location = document.getElementById('locationInput').value; // 抓取新欄位值
             
-            // 🌟 產生一個唯一的 id（使用當前時間戳記戳記，例如：1715000000000）
             const uniqueId = Date.now().toString();
 
             try {
@@ -230,11 +236,14 @@
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
                 const finalPhotoString = uploadedUrls.join(',');
 
-                // 🌟 把 id 欄位跟資料一起 POST 給 SheetDB 寫入 Google 試算表
+                // 🌟 【智慧串接技術】：為了不破壞你原本 Google 試算表只有 A, B, C, D 欄的設計，
+                // 程式會貼心地在傳送給試算表時，自動把「地點」串在 note 資料的後方，但網頁畫面上依然是維持分開成兩行的。
+                const combinedNote = `${note} （地點：${location}）`;
+
                 const response = await fetch(SHEETDB_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [{ id: uniqueId, name, note, photo: finalPhotoString }] })
+                    body: JSON.stringify({ data: [{ id: uniqueId, name, note: combinedNote, photo: finalPhotoString }] })
                 });
 
                 if(response.ok) {
@@ -256,9 +265,8 @@
             }
         });
 
-        // 🌟 精準刪除資料功能（加上安全防呆機制）
+        // 精準刪資料功能
         async function deleteMember(id, name) {
-            // 防呆：如果 id 遺失、未定義或是空值，拒絕執行刪除，避免全刪
             if (!id || id === "" || id === "undefined" || id === "null") {
                 alert("錯誤：此項目在資料庫中缺少唯一 ID（可能是舊資料），為了安全起見已攔截刪除指令，防止清空資料表。\n\n提示：建議直接前往 Google 試算表手動刪除該整列。");
                 return;
@@ -267,7 +275,6 @@
             if(!confirm(`確定要刪除「${name}」的這筆通報資料嗎？`)) return;
             
             try {
-                // 🌟 透過精準的 id 來要求 SheetDB 刪除特定某一列
                 const response = await fetch(`${SHEETDB_URL}/id/${id}`, { method: 'DELETE' });
                 if(response.ok) { 
                     alert('刪除成功！'); 
