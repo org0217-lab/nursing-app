@@ -29,7 +29,7 @@
             <h1 class="text-3xl font-bold text-red-600 mb-2">
                 <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓通報系統
             </h1>
-            <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可直接拍照或選擇相片回報，僅限管理員有權限刪除。</p>
+            <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可直接拍照或選擇相片回報（支援多張上傳），僅限管理員有權限刪除。</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -45,15 +45,15 @@
                         <input type="text" id="noteInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：行凶地點、涉案具體事由">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 <span class="text-red-500">*</span></label>
-                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition cursor-pointer group">
-                            <input type="file" id="photoInput" accept="image/*" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 (可多選) <span class="text-red-500">*</span></label>
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition cursor-pointer group mb-2">
+                            <input type="file" id="photoInput" accept="image/*" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                             <div id="uploadPrompt" class="space-y-1">
-                                <i class="fa-solid fa-image text-2xl text-gray-400 group-hover:text-red-500 transition"></i>
-                                <p class="text-xs text-gray-500">點擊選擇照片或拍照</p>
+                                <i class="fa-solid fa-images text-2xl text-gray-400 group-hover:text-red-500 transition"></i>
+                                <p class="text-xs text-gray-500">點擊選擇一張或多張照片</p>
                             </div>
-                            <img id="formPreview" class="hidden max-h-24 mx-auto rounded shadow-sm mt-1">
                         </div>
+                        <div id="previewContainer" class="grid grid-cols-3 gap-2 mt-2"></div>
                     </div>
                     <button type="submit" id="submitBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-sm flex justify-center items-center gap-2">
                         <i class="fa-solid fa-cloud-arrow-up"></i> 傳送資料
@@ -70,7 +70,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm font-medium border-b border-gray-200">
-                                <th class="p-3">照片 / 證物</th>
+                                <th class="p-3">照片 / 證物 (點擊放大)</th>
                                 <th class="p-3">姓名 / 綽號</th>
                                 <th class="p-3">事件說明 / 地點</th>
                                 <th class="p-3 text-center action-header hidden">操作</th>
@@ -111,23 +111,33 @@
         const ADMIN_PASSWORD = "admin123";
 
         let isAdmin = false;
-        let selectedFile = null;
+        let selectedFiles = []; // 儲存多個選取的檔案
 
         window.onload = function() {
             fetchData();
         };
 
-        // 處理圖片即時預覽
+        // 🌟 處理多張圖片即時預覽 🌟
         document.getElementById('photoInput').addEventListener('change', (e) => {
-            selectedFile = e.target.files[0];
-            if (selectedFile) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    document.getElementById('formPreview').src = event.target.result;
-                    document.getElementById('formPreview').classList.remove('hidden');
-                    document.getElementById('uploadPrompt').classList.add('hidden');
-                }
-                reader.readAsDataURL(selectedFile);
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = ''; // 清空舊預覽
+            selectedFiles = Array.from(e.target.files);
+
+            if (selectedFiles.length > 0) {
+                document.getElementById('uploadPrompt').classList.add('hidden');
+                
+                selectedFiles.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.className = "w-full h-20 object-cover rounded shadow-sm border border-gray-200";
+                        previewContainer.appendChild(img);
+                    }
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                document.getElementById('uploadPrompt').classList.remove('hidden');
             }
         });
 
@@ -149,10 +159,24 @@
                 data.reverse().forEach((item) => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-red-50/30 transition';
+                    
+                    // 🌟 支援解開由逗號分隔的多張圖片網址 🌟
+                    let photoHtml = `<div class="flex flex-wrap gap-1.5 max-w-[160px]">`;
+                    if (item.photo) {
+                        const urls = item.photo.split(',');
+                        urls.forEach(url => {
+                            const trimmedUrl = url.trim();
+                            if(trimmedUrl) {
+                                photoHtml += `<img src="${trimmedUrl}" onclick="openLightbox('${trimmedUrl}')" class="zoomable-img w-11 h-11 object-cover rounded shadow-sm border hover:opacity-80 transition" onerror="this.src='https://placehold.co/100x100?text=No+Image'">`;
+                            }
+                        });
+                    } else {
+                        photoHtml += `<img src="https://placehold.co/100x100?text=No+Image" class="w-11 h-11 object-cover rounded border">`;
+                    }
+                    photoHtml += `</div>`;
+
                     tr.innerHTML = `
-                        <td class="p-3">
-                            <img src="${item.photo}" onclick="openLightbox('${item.photo}')" class="zoomable-img w-12 h-12 object-cover rounded shadow-sm border hover:opacity-80 transition" onerror="this.src='https://placehold.co/100x100?text=No+Image'">
-                        </td>
+                        <td class="p-3">${photoHtml}</td>
                         <td class="p-3 font-medium text-gray-900">${item.name}</td>
                         <td class="p-3 text-gray-600">${item.note}</td>
                         <td class="p-3 text-center action-cell ${isAdmin ? '' : 'hidden'}">
@@ -168,54 +192,64 @@
             }
         }
 
-        // 提交表單（自動圖片上傳）
+        // 提交表單（🌟 支援多圖跑迴圈依次上傳 🌟）
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
-            if(!selectedFile) return alert('請選擇或拍攝一張照片！');
+            if(selectedFiles.length === 0) return alert('請至少選擇一張照片！');
 
             const name = document.getElementById('nameInput').value;
-            const note = document.getElementById('noteInput').value; // 移除預設的 '未填寫'
+            const note = document.getElementById('noteInput').value;
 
             try {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 照片上傳中...`;
+                
+                let uploadedUrls = [];
+                
+                // 跑迴圈一張張上傳到 Imgbb
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 照片上傳中 (${i + 1}/${selectedFiles.length})...`;
+                    
+                    const formData = new FormData();
+                    formData.append('image', selectedFiles[i]);
 
-                const formData = new FormData();
-                formData.append('image', selectedFile);
+                    const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const imgbbResult = await imgbbResponse.json();
 
-                const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const imgbbResult = await imgbbResponse.json();
-
-                if(!imgbbResult.success) {
-                    throw new Error('圖床伺服器拒絕上傳');
+                    if(imgbbResult.success) {
+                        uploadedUrls.push(imgbbResult.data.url);
+                    } else {
+                        throw new Error(`第 ${i+1} 張照片上傳失敗`);
+                    }
                 }
 
-                const photoUrl = imgbbResult.data.url;
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
+
+                // 將所有網址用「逗號」串接成一個字串發送給 SheetDB
+                const finalPhotoString = uploadedUrls.join(',');
 
                 const response = await fetch(SHEETDB_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [{ name, note, photo: photoUrl }] })
+                    body: JSON.stringify({ data: [{ name, note, photo: finalPhotoString }] })
                 });
 
                 if(response.ok) {
-                    alert('回報成功！照片已自動同步至雲端名單。');
+                    alert('回報成功！所有照片已自動同步至雲端名單。');
                     document.getElementById('uploadForm').reset();
-                    document.getElementById('formPreview').classList.add('hidden');
+                    document.getElementById('previewContainer').innerHTML = '';
                     document.getElementById('uploadPrompt').classList.remove('hidden');
-                    selectedFile = null;
+                    selectedFiles = [];
                     fetchData();
                 } else {
                     alert('資料庫寫入失敗。');
                 }
             } catch (error) {
                 console.error(error);
-                alert('上傳發生錯誤，請稍後再試。');
+                alert('上傳發生錯誤，請確認網路連線或稍後再試。');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> 傳送資料`;
