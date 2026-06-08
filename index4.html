@@ -108,8 +108,6 @@
     <script>
         const SHEETDB_URL = "https://sheetdb.io/api/v1/l8t0q7pya1f58";
         const IMGBB_API_KEY = "553419e2ce49f5d42f3c452cf988fe19";
-        
-        // 🌟 管理員密碼已成功更換為 3345678
         const ADMIN_PASSWORD = "3345678";
 
         let isAdmin = false;
@@ -176,12 +174,13 @@
                     }
                     photoHtml += `</div>`;
 
+                    // 🌟 這裡修改為傳入項目的唯一 id 進行刪除
                     tr.innerHTML = `
                         <td class="p-3">${photoHtml}</td>
                         <td class="p-3 font-medium text-gray-900">${item.name}</td>
                         <td class="p-3 text-gray-600">${item.note}</td>
                         <td class="p-3 text-center action-cell ${isAdmin ? '' : 'hidden'}">
-                            <button onclick="deleteMember('${item.name}')" class="text-gray-400 hover:text-red-600 transition p-1">
+                            <button onclick="deleteMember('${item.id}', '${item.name}')" class="text-gray-400 hover:text-red-600 transition p-1">
                                 <i class="fa-regular fa-trash-can text-base"></i>
                             </button>
                         </td>
@@ -201,6 +200,9 @@
 
             const name = document.getElementById('nameInput').value;
             const note = document.getElementById('noteInput').value;
+            
+            // 🌟 產生一個唯一的 id（使用當前時間戳記戳記，例如：1715000000000）
+            const uniqueId = Date.now().toString();
 
             try {
                 submitBtn.disabled = true;
@@ -228,10 +230,11 @@
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
                 const finalPhotoString = uploadedUrls.join(',');
 
+                // 🌟 把 id 欄位跟資料一起 POST 給 SheetDB 寫入 Google 試算表
                 const response = await fetch(SHEETDB_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [{ name, note, photo: finalPhotoString }] })
+                    body: JSON.stringify({ data: [{ id: uniqueId, name, note, photo: finalPhotoString }] })
                 });
 
                 if(response.ok) {
@@ -253,13 +256,28 @@
             }
         });
 
-        // 刪除資料
-        async function deleteMember(name) {
-            if(!confirm(`確定要刪除「${name}」的列管資料嗎？`)) return;
+        // 🌟 精準刪除資料功能（加上安全防呆機制）
+        async function deleteMember(id, name) {
+            // 防呆：如果 id 遺失、未定義或是空值，拒絕執行刪除，避免全刪
+            if (!id || id === "" || id === "undefined" || id === "null") {
+                alert("錯誤：此項目在資料庫中缺少唯一 ID（可能是舊資料），為了安全起見已攔截刪除指令，防止清空資料表。\n\n提示：建議直接前往 Google 試算表手動刪除該整列。");
+                return;
+            }
+
+            if(!confirm(`確定要刪除「${name}」的這筆通報資料嗎？`)) return;
+            
             try {
-                const response = await fetch(`${SHEETDB_URL}/name/${name}`, { method: 'DELETE' });
-                if(response.ok) { alert('刪除成功！'); fetchData(); } else { alert('刪除失敗。'); }
-            } catch (error) { alert('刪除連線失敗。'); }
+                // 🌟 透過精準的 id 來要求 SheetDB 刪除特定某一列
+                const response = await fetch(`${SHEETDB_URL}/id/${id}`, { method: 'DELETE' });
+                if(response.ok) { 
+                    alert('刪除成功！'); 
+                    fetchData(); 
+                } else { 
+                    alert('資料庫刪除失敗。'); 
+                }
+            } catch (error) { 
+                alert('刪除連線失敗。'); 
+            }
         }
 
         // 大圖燈箱控制
