@@ -50,7 +50,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">設定此文刪除密碼 <span class="text-red-500">*</span></label>
-                        <input type="password" id="postPasswordInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="請輸入自訂密碼 (日後自刪用)">
+                        <input type="password" id="postPasswordInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="請輸入自訂密碼 (四位數，日後自刪用)">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 (可多選) <span class="text-red-500">*</span></label>
@@ -88,7 +88,8 @@
                                 <th class="p-3">姓名 / 綽號</th>
                                 <th class="p-3">事件說明 / IP</th>
                                 <th class="p-3">遭遇地點</th>
-                                <th class="p-3 text-center w-16">操作</th> </tr>
+                                <th class="p-3 text-center w-16">操作</th>
+                            </tr>
                         </thead>
                         <tbody id="memberTableBody" class="divide-y divide-gray-100 text-sm">
                             <tr id="emptyRow"><td colspan="5" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>
@@ -207,7 +208,7 @@
                         ipHtml = `<div class="text-[11px] text-gray-400 font-mono mt-0.5"><i class="fa-solid fa-network-wired mr-1"></i>${ipAddress}</div>`;
                     }
 
-                    // 🌟 智慧判斷垃圾桶樣式：如果是管理者顯示紅色，普通使用者顯示淡灰色
+                    // 智慧判斷垃圾桶樣式：如果是管理者顯示紅色，普通使用者顯示淡灰色
                     const trashBtnHtml = isAdmin 
                         ? `<button onclick="deleteMember('${item.id}', '${item.name}')" class="text-red-500 hover:text-red-700 transition p-1" title="管理員強制刪除"><i class="fa-solid fa-trash-can text-base"></i></button>`
                         : `<button onclick="deleteMember('${item.id}', '${item.name}')" class="text-gray-400 hover:text-red-600 transition p-1" title="憑文章密碼自行刪除"><i class="fa-regular fa-trash-can text-base"></i></button>`;
@@ -244,8 +245,7 @@
             
             if(!postPassword) return alert('請設定此文章的刪除密碼！');
 
-            // 🌟 【智慧串接技術】：我們把自動產生的時間戳記與使用者自訂密碼包裹在一起 (格式: 時間_使用者密碼)
-            // 如此一來，一樣不需要新增 Google Sheet 欄位，就能透過一個 id 儲存兩個資訊！
+            // 包裹時間戳記與使用者自訂密碼 (格式: 時間_使用者密碼)
             const uniqueId = `${Date.now()}_${postPassword}`;
 
             try {
@@ -320,22 +320,19 @@
 
             // 拆解出原本儲存的密碼
             const idParts = fullId.split('_');
-            const originalPostPassword = idParts[1] || ""; // 這篇文章當初設定的密碼
+            const originalPostPassword = idParts[1] || ""; 
 
-            // 如果目前已經是大管理員登入狀態，直接確認就可以免密碼刪除
             if (isAdmin) {
                 if(!confirm(`[管理員最高權限] 確定要強制刪除「${name}」的通報資料嗎？`)) return;
                 executeDelete(fullId);
                 return;
             }
 
-            // 非管理員狀態下，彈出輸入框請使用者輸入密碼
             const inputPassword = prompt(`請輸入您在發表「${name}」這篇文章時所設定的「刪除密碼」或「管理員密碼」：`);
             
-            if (inputPassword === null) return; // 使用者按取消
+            if (inputPassword === null) return; 
             const trimmedInput = inputPassword.trim();
 
-            // 驗證密碼：如果輸入大管理員密碼，或者與文章當初自訂的密碼吻合，就通關！
             if (trimmedInput === ADMIN_PASSWORD) {
                 executeDelete(fullId);
             } else if (originalPostPassword !== "" && trimmedInput === originalPostPassword) {
@@ -388,7 +385,7 @@
                 document.getElementById('adminZone').classList.add('flex');
                 toggleLoginModal();
                 document.getElementById('adminPassword').value = '';
-                fetchData(); // 重新渲染，垃圾桶會變成管理員專用紅色
+                fetchData(); 
             } else { alert('密碼錯誤！'); }
         };
         window.logout = () => {
@@ -397,7 +394,7 @@
                 document.getElementById('loginBtn').classList.remove('hidden');
                 document.getElementById('adminZone').classList.add('hidden');
                 document.getElementById('adminZone').classList.remove('flex');
-                fetchData(); // 重新渲染，垃圾桶變回普通灰色
+                fetchData(); 
             }
         };
     </script>
