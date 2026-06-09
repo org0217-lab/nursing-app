@@ -66,18 +66,23 @@
             </div>
 
             <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-lg font-semibold text-gray-700">目前列管名單 (<span id="count">0</span>)</h2>
-                    <button onclick="fetchData()" class="text-xs text-indigo-600 hover:underline"><i class="fa-solid fa-rotate-right mr-1"></i>重新整理名單</button>
+                <div class="border-b pb-3 mb-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-lg font-semibold text-gray-700">目前列管名單 (<span id="count">0</span>)</h2>
+                        <button onclick="fetchData()" class="text-xs text-indigo-600 hover:underline"><i class="fa-solid fa-rotate-right mr-1"></i>重新整理名單</button>
+                    </div>
+                    <p class="text-xs text-red-500 mt-1 font-medium">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i>請勿上傳不實名單，惡意造謠者須負相關法律責任。
+                    </p>
                 </div>
+                
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm font-medium border-b border-gray-200">
                                 <th class="p-3 w-32">照片 / 證物</th>
                                 <th class="p-3">姓名 / 綽號</th>
-                                <th class="p-3">事件說明</th>
-                                <th class="p-3">遭遇地點</th>
+                                <th class="p-3">事件說明 / 來源 IP</th> <th class="p-3">遭遇地點</th>
                                 <th class="p-3 text-center action-header hidden w-16">操作</th>
                             </tr>
                         </thead>
@@ -179,12 +184,34 @@
                     }
                     photoHtml += `</div>`;
 
-                    // 🌟 這裡將 note 拆開，並將原本寫在 note 欄位裡的「地點」資料一併渲染到獨立一格
+                    // 🌟 智慧解構：從 note 中分離出 事件說明、地點 以及 IP 位址
+                    let rawNote = item.note || '';
+                    let displayNote = rawNote;
+                    let displayLocation = '';
+
+                    // 先分離地點和前段
+                    const matchLocation = rawNote.match(/(.*)（地點：(.*)）/);
+                    if (matchLocation) {
+                        displayNote = matchLocation[1];
+                        displayLocation = matchLocation[2];
+                    }
+
+                    // 再從 displayNote 裡面看看有沒有包含 IP 欄位，有的話把它美化呈現
+                    let ipHtml = '';
+                    const matchIp = displayNote.match(/(.*)（IP:\s*([\d\.]+|未知)）/);
+                    if (matchIp) {
+                        displayNote = matchIp[1]; // 純事件說明
+                        const ipAddress = matchIp[2];
+                        ipHtml = `<div class="text-[11px] text-gray-400 font-mono mt-0.5"><i class="fa-solid fa-network-wired mr-0.5"></i>來源 IP: ${ipAddress}</div>`;
+                    }
+
                     tr.innerHTML = `
                         <td class="p-3">${photoHtml}</td>
                         <td class="p-3 font-medium text-gray-900">${item.name || ''}</td>
-                        <td class="p-3 text-gray-600">${item.note || ''}</td>
-                        <td class="p-3 text-gray-600">${item.note || ''}</td>
+                        <td class="p-3 text-gray-600">
+                            <div>${displayNote}</div>
+                            ${ipHtml} </td>
+                        <td class="p-3 text-gray-600">${displayLocation}</td>
                         <td class="p-3 text-center action-cell ${isAdmin ? '' : 'hidden'}">
                             <button onclick="deleteMember('${item.id}', '${item.name}')" class="text-gray-400 hover:text-red-600 transition p-1">
                                 <i class="fa-regular fa-trash-can text-base"></i>
@@ -198,7 +225,7 @@
             }
         }
 
-        // 提交表單（多圖批次上傳）
+        // 提交表單（多圖批次上傳 + 自動抓取 IP）
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -206,14 +233,25 @@
 
             const name = document.getElementById('nameInput').value;
             const note = document.getElementById('noteInput').value;
-            const location = document.getElementById('locationInput').value; // 抓取新欄位值
+            const location = document.getElementById('locationInput').value;
             
             const uniqueId = Date.now().toString();
 
             try {
                 submitBtn.disabled = true;
-                let uploadedUrls = [];
                 
+                // 🌟 [新增功能] 異步抓取上傳者的公網 IP 位址
+                let userIp = "未知";
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 安全驗證中...`;
+                try {
+                    const ipResponse = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipResponse.json();
+                    userIp = ipData.ip || "未知";
+                } catch (ipErr) {
+                    console.error("無法取得IP:", ipErr);
+                }
+
+                let uploadedUrls = [];
                 for (let i = 0; i < selectedFiles.length; i++) {
                     submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 照片上傳中 (${i + 1}/${selectedFiles.length})...`;
                     
@@ -236,9 +274,8 @@
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
                 const finalPhotoString = uploadedUrls.join(',');
 
-                // 🌟 【智慧串接技術】：為了不破壞你原本 Google 試算表只有 A, B, C, D 欄的設計，
-                // 程式會貼心地在傳送給試算表時，自動把「地點」串在 note 資料的後方，但網頁畫面上依然是維持分開成兩行的。
-                const combinedNote = `${note} （地點：${location}）`;
+                // 🌟 自動將 IP 與 地點 同步封裝進 note 欄位內送出
+                const combinedNote = `${note}（IP: ${userIp}） （地點：${location}）`;
 
                 const response = await fetch(SHEETDB_URL, {
                     method: 'POST',
