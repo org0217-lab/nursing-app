@@ -29,7 +29,7 @@
             <h1 class="text-3xl font-bold text-red-600 mb-2">
                 <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>虐貓通報系統
             </h1>
-            <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可直接拍照或選擇相片回報（支援多張上傳），僅限管理員有權限刪除。</p>
+            <p class="text-gray-500">此系統已連線雲端資料庫。所有人皆可直接回報，發文者可憑自訂密碼刪除，管理員擁有最高刪除權限。</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -47,6 +47,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">遭遇地點 <span class="text-red-500">*</span></label>
                         <input type="text" id="locationInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="例如：某縣市某路段、某社群社團">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">設定此文刪除密碼 <span class="text-red-500">*</span></label>
+                        <input type="password" id="postPasswordInput" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="請輸入自訂密碼 (日後自刪用)">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">上傳照片 / 證物截圖 (可多選) <span class="text-red-500">*</span></label>
@@ -82,9 +86,9 @@
                             <tr class="bg-gray-50 text-gray-600 text-sm font-medium border-b border-gray-200">
                                 <th class="p-3 w-32">照片 / 證物</th>
                                 <th class="p-3">姓名 / 綽號</th>
-                                <th class="p-3">事件說明 / 來源 IP</th> <th class="p-3">遭遇地點</th>
-                                <th class="p-3 text-center action-header hidden w-16">操作</th>
-                            </tr>
+                                <th class="p-3">事件說明 / IP</th>
+                                <th class="p-3">遭遇地點</th>
+                                <th class="p-3 text-center w-16">操作</th> </tr>
                         </thead>
                         <tbody id="memberTableBody" class="divide-y divide-gray-100 text-sm">
                             <tr id="emptyRow"><td colspan="5" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2 block"></i>連線雲端資料庫中...</td></tr>
@@ -184,38 +188,40 @@
                     }
                     photoHtml += `</div>`;
 
-                    // 🌟 智慧解構：從 note 中分離出 事件說明、地點 以及 IP 位址
+                    // 從 note 中分離出 事件說明、地點 以及 IP 位址
                     let rawNote = item.note || '';
                     let displayNote = rawNote;
                     let displayLocation = '';
 
-                    // 先分離地點和前段
                     const matchLocation = rawNote.match(/(.*)（地點：(.*)）/);
                     if (matchLocation) {
                         displayNote = matchLocation[1];
                         displayLocation = matchLocation[2];
                     }
 
-                    // 再從 displayNote 裡面看看有沒有包含 IP 欄位，有的話把它美化呈現
                     let ipHtml = '';
                     const matchIp = displayNote.match(/(.*)（IP:\s*([\d\.]+|未知)）/);
                     if (matchIp) {
-                        displayNote = matchIp[1]; // 純事件說明
+                        displayNote = matchIp[1]; 
                         const ipAddress = matchIp[2];
-                        ipHtml = `<div class="text-[11px] text-gray-400 font-mono mt-0.5"><i class="fa-solid fa-network-wired mr-0.5"></i>來源 IP: ${ipAddress}</div>`;
+                        ipHtml = `<div class="text-[11px] text-gray-400 font-mono mt-0.5"><i class="fa-solid fa-network-wired mr-1"></i>${ipAddress}</div>`;
                     }
+
+                    // 🌟 智慧判斷垃圾桶樣式：如果是管理者顯示紅色，普通使用者顯示淡灰色
+                    const trashBtnHtml = isAdmin 
+                        ? `<button onclick="deleteMember('${item.id}', '${item.name}')" class="text-red-500 hover:text-red-700 transition p-1" title="管理員強制刪除"><i class="fa-solid fa-trash-can text-base"></i></button>`
+                        : `<button onclick="deleteMember('${item.id}', '${item.name}')" class="text-gray-400 hover:text-red-600 transition p-1" title="憑文章密碼自行刪除"><i class="fa-regular fa-trash-can text-base"></i></button>`;
 
                     tr.innerHTML = `
                         <td class="p-3">${photoHtml}</td>
                         <td class="p-3 font-medium text-gray-900">${item.name || ''}</td>
                         <td class="p-3 text-gray-600">
                             <div>${displayNote}</div>
-                            ${ipHtml} </td>
+                            ${ipHtml}
+                        </td>
                         <td class="p-3 text-gray-600">${displayLocation}</td>
-                        <td class="p-3 text-center action-cell ${isAdmin ? '' : 'hidden'}">
-                            <button onclick="deleteMember('${item.id}', '${item.name}')" class="text-gray-400 hover:text-red-600 transition p-1">
-                                <i class="fa-regular fa-trash-can text-base"></i>
-                            </button>
+                        <td class="p-3 text-center action-cell">
+                            ${trashBtnHtml}
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -225,7 +231,7 @@
             }
         }
 
-        // 提交表單（多圖批次上傳 + 自動抓取 IP）
+        // 提交表單（多圖批次上傳 + 自動抓取 IP + 封裝自刪密碼）
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -234,13 +240,17 @@
             const name = document.getElementById('nameInput').value;
             const note = document.getElementById('noteInput').value;
             const location = document.getElementById('locationInput').value;
+            const postPassword = document.getElementById('postPasswordInput').value.trim();
             
-            const uniqueId = Date.now().toString();
+            if(!postPassword) return alert('請設定此文章的刪除密碼！');
+
+            // 🌟 【智慧串接技術】：我們把自動產生的時間戳記與使用者自訂密碼包裹在一起 (格式: 時間_使用者密碼)
+            // 如此一來，一樣不需要新增 Google Sheet 欄位，就能透過一個 id 儲存兩個資訊！
+            const uniqueId = `${Date.now()}_${postPassword}`;
 
             try {
                 submitBtn.disabled = true;
                 
-                // 🌟 [新增功能] 異步抓取上傳者的公網 IP 位址
                 let userIp = "未知";
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 安全驗證中...`;
                 try {
@@ -274,7 +284,6 @@
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 同步試算表中...`;
                 const finalPhotoString = uploadedUrls.join(',');
 
-                // 🌟 自動將 IP 與 地點 同步封裝進 note 欄位內送出
                 const combinedNote = `${note}（IP: ${userIp}） （地點：${location}）`;
 
                 const response = await fetch(SHEETDB_URL, {
@@ -302,22 +311,49 @@
             }
         });
 
-        // 精準刪資料功能
-        async function deleteMember(id, name) {
-            if (!id || id === "" || id === "undefined" || id === "null") {
-                alert("錯誤：此項目在資料庫中缺少唯一 ID（可能是舊資料），為了安全起見已攔截刪除指令，防止清空資料表。\n\n提示：建議直接前往 Google 試算表手動刪除該整列。");
+        // 智慧刪資料功能（支持管理員密碼或個人密碼自刪）
+        async function deleteMember(fullId, name) {
+            if (!fullId || fullId === "" || fullId === "undefined" || fullId === "null") {
+                alert("錯誤：此項目缺少唯一 ID（舊測試資料），請大管理員前往 Google 試算表手動整列刪除。");
                 return;
             }
 
-            if(!confirm(`確定要刪除「${name}」的這筆通報資料嗎？`)) return;
+            // 拆解出原本儲存的密碼
+            const idParts = fullId.split('_');
+            const originalPostPassword = idParts[1] || ""; // 這篇文章當初設定的密碼
+
+            // 如果目前已經是大管理員登入狀態，直接確認就可以免密碼刪除
+            if (isAdmin) {
+                if(!confirm(`[管理員最高權限] 確定要強制刪除「${name}」的通報資料嗎？`)) return;
+                executeDelete(fullId);
+                return;
+            }
+
+            // 非管理員狀態下，彈出輸入框請使用者輸入密碼
+            const inputPassword = prompt(`請輸入您在發表「${name}」這篇文章時所設定的「刪除密碼」或「管理員密碼」：`);
             
+            if (inputPassword === null) return; // 使用者按取消
+            const trimmedInput = inputPassword.trim();
+
+            // 驗證密碼：如果輸入大管理員密碼，或者與文章當初自訂的密碼吻合，就通關！
+            if (trimmedInput === ADMIN_PASSWORD) {
+                executeDelete(fullId);
+            } else if (originalPostPassword !== "" && trimmedInput === originalPostPassword) {
+                executeDelete(fullId);
+            } else {
+                alert("密碼錯誤！無法刪除此文章。");
+            }
+        }
+
+        // 執行刪除 API
+        async function executeDelete(id) {
             try {
                 const response = await fetch(`${SHEETDB_URL}/id/${id}`, { method: 'DELETE' });
                 if(response.ok) { 
-                    alert('刪除成功！'); 
+                    alert('文章已順利成功刪除！'); 
                     fetchData(); 
                 } else { 
-                    alert('資料庫刪除失敗。'); 
+                    alert('資料庫刪除失敗，請檢查 SheetDB 權限。'); 
                 }
             } catch (error) { 
                 alert('刪除連線失敗。'); 
@@ -350,9 +386,9 @@
                 document.getElementById('loginBtn').classList.add('hidden');
                 document.getElementById('adminZone').classList.remove('hidden');
                 document.getElementById('adminZone').classList.add('flex');
-                document.querySelectorAll('.action-header, .action-cell').forEach(el => el.classList.remove('hidden'));
                 toggleLoginModal();
                 document.getElementById('adminPassword').value = '';
+                fetchData(); // 重新渲染，垃圾桶會變成管理員專用紅色
             } else { alert('密碼錯誤！'); }
         };
         window.logout = () => {
@@ -361,7 +397,7 @@
                 document.getElementById('loginBtn').classList.remove('hidden');
                 document.getElementById('adminZone').classList.add('hidden');
                 document.getElementById('adminZone').classList.remove('flex');
-                document.querySelectorAll('.action-header, .action-cell').forEach(el => el.classList.add('hidden'));
+                fetchData(); // 重新渲染，垃圾桶變回普通灰色
             }
         };
     </script>
